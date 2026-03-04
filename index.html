@@ -20,7 +20,7 @@
         #game-container {
             position: relative;
             width: 392px;
-            height: 820px;
+            height: 898px;
             margin: 0 auto;
             display: flex;
             flex-direction: column;
@@ -31,14 +31,14 @@
             transform-origin: center center;
         }
 
-        @media (max-width: 392px) or (max-height: 820px) {
+        @media (max-width: 392px) or (max-height: 898px) {
             #game-container {
-                transform: scale(min(calc(100vw / 392), calc(100vh / 820)));
+                transform: scale(min(calc(100vw / 392), calc(100vh / 898)));
             }
         }
 
         :fullscreen #game-container, :-webkit-full-screen #game-container {
-            transform: scale(min(calc(100vw / 392), calc(100vh / 820))) !important;
+            transform: scale(min(calc(100vw / 392), calc(100vh / 898))) !important;
             margin: auto;
         }
 
@@ -636,7 +636,7 @@
                 <img src="ebg.png" id="ebg">
                 <div id="result-canvases"></div>
                 <!-- Top Layer Full Screen Image -->
-                <img src="ebg2.png" id="ebg2" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index: 1000; pointer-events: none; object-fit: cover;">
+                <img src="ebg2.png" id="ebg2" style="position:absolute; top:0; left:0; width:392px; height:898px; z-index: 1000; pointer-events: none;">
             </div>
         </div>
     </div>
@@ -1150,10 +1150,10 @@
             function getPos(e) {
                 const rect = canvas.getBoundingClientRect();
 
-                // Calculate scale based on the game-container's current rendered size vs its base size (392x820)
+                // Calculate scale based on the game-container's current rendered size vs its base size (392x898)
                 const container = document.getElementById('game-container');
                 const containerRect = container.getBoundingClientRect();
-                const scale = containerRect.width / 392;
+                const scale = containerRect.height / 898;
 
                 let cx, cy;
                 if (e.touches && e.touches.length > 0) {
