@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>어늑한 방</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000;
+            font-family: sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 209.18vw;
+            max-width: 392px;
+            max-height: 820px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #000;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            touch-action: none;
+        }
+
+        @media (min-aspect-ratio: 392/820) {
+            #game-container {
+                width: 47.8vh;
+                height: 100vh;
+            }
+        }
+
+        :fullscreen #game-container {
+            max-width: none;
+            max-height: none;
+        }
+        :-webkit-full-screen #game-container {
+            max-width: none;
+            max-height: none;
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #000;
+        }
+
+        /* 게임 화면 스크린창 */
+        #screen-window {
+            position: relative;
+            width: calc(100% - 10px);
+            height: calc(70% - 10px);
+            background-color: #333;
+            overflow: hidden;
+            border: 2px solid #555;
+            margin-top: 25px;
+            box-sizing: border-box;
+            z-index: 10;
+        }
+
+        /* 레이어 순서 설정 */
+        .layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        #btn-right {
+            transform: translateX(0);
+        }
+
+        #btn-jump {
+            transform: translateX(-10px);
+        }
+
+        #start-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5000;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 2s ease-out;
+        }
+
+        #start-overlay img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        #layer-fbg { z-index: 0; }
+        #layer-bg { z-index: 1; }
+        #layer-house-bg { z-index: 2; }
+        #layer-drawing { z-index: 3; }
+        #layer-character { z-index: 4; }
+        #layer-items { z-index: 5; }
+        #layer-speech { z-index: 6; pointer-events: none; }
+        #layer-ui { z-index: 7; pointer-events: none; }
+
+
+        .bg-img {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        #player {
+            position: absolute;
+            bottom: 50px; /* 바닥 위치 */
+            left: 50px;
+            width: 64px;
+            height: 64px;
+            object-fit: contain;
+            image-rendering: pixelated;
+            /* Center the sprite horizontally on its coordinate */
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+
+        .item {
+            position: absolute;
+        }
+
+        #art-item {
+            right: 120px;
+            bottom: 45px;
+        }
+
+        #house {
+            right: 30px;
+            bottom: 50px;
+        }
+
+        /* 컨트롤러 레이아웃 */
+        #controls {
+            position: absolute;
+            bottom: 60px;
+            width: 100%;
+            height: 30%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            box-sizing: border-box;
+            pointer-events: auto;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 20px;
+        }
+
+        .btn {
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .btn img {
+            pointer-events: none;
+        }
+
+        /* 말풍선 및 상점/아트 UI */
+        #speech-bubble-container {
+            position: absolute;
+            top: calc(50% - 50px);
+            left: 50%;
+            transform: translate(-50%, -100%);
+            display: none;
+            cursor: pointer;
+            pointer-events: auto;
+        }
+
+        #speech-bubble {
+        }
+
+        #yes-btn {
+            position: absolute;
+            display: none;
+            cursor: pointer;
+            z-index: 4000;
+            pointer-events: auto;
+            /* No fade animation */
+        }
+
+        #guide-a {
+            position: absolute;
+            top: 49px;
+            right: 30px;
+            transform: scale(0.8);
+            pointer-events: none;
+            display: none;
+        }
+
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        .blink {
+            animation: blink 1s infinite;
+        }
+
+        #star {
+            position: absolute;
+            top: -100px;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: top 1s ease-out;
+        }
+
+        @keyframes starExit {
+            0% { transform: translate(-50%, -50%); opacity: 1; }
+            30% { transform: translate(-40%, -100%) scale(1.2); }
+            100% { transform: translate(-20%, -600%) scale(0.5); opacity: 0; }
+        }
+
+        .star-jump-out {
+            animation: starExit 1s forwards ease-in;
+        }
+
+        /* 아트 창 */
+        #art-window {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1000;
+            display: none;
+            background-color: #7D7D7D;
+            pointer-events: auto;
+        }
+
+        #art-name-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        .canvas-container {
+            position: absolute;
+            background: white;
+            border: 2px solid #000;
+            pointer-events: auto;
+        }
+
+        #canvas-left {
+            width: 200px;
+            height: 300px;
+            left: 10px;
+            top: 200px;
+            pointer-events: auto;
+        }
+
+        #canvas-right {
+            width: 160px;
+            height: 60px;
+            left: 220px;
+            top: 440px;
+            pointer-events: auto;
+        }
+
+        #art-ui {
+            position: absolute;
+            bottom: 220px; /* snippet 170 + 50 extra */
+            left: 10px;
+            width: calc(100% - 20px);
+            display: flex;
+            align-items: flex-end;
+            gap: 15px;
+            pointer-events: none;
+        }
+
+        #art-ui > * {
+            pointer-events: auto;
+        }
+
+        #palette-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+            transform: translateY(40px); /* Brush group up an additional 0px */
+        }
+
+        .bold-dots {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            cursor: pointer;
+        }
+
+        .dot {
+            position: absolute;
+            background: #FFFFFF;
+            border-radius: 50%;
+            border: 3px solid #000;
+            box-sizing: border-box;
+            transition: background 0.2s;
+        }
+
+        #exit-btn {
+            position: absolute;
+            top: 190px;
+            right: 10px;
+            cursor: pointer;
+            z-index: 105;
+        }
+
+        #btn-eraser {
+            position: absolute;
+            right: 10px;
+            top: 380px;
+            cursor: pointer;
+            z-index: 105;
+        }
+
+        #color-palette {
+            position: relative;
+            top: -20px;
+            display: none;
+            grid-template-columns: repeat(8, 30px);
+            gap: 5px;
+            padding: 5px;
+        }
+
+        .color-opt {
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+        }
+
+        #confirm-exit {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.6);
+            text-align: center;
+            z-index: 3000;
+            pointer-events: auto;
+        }
+
+        .exit-btns {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            pointer-events: auto;
+        }
+
+        #ok-btn, #no-btn {
+            cursor: pointer;
+            transition: transform 0.1s;
+            pointer-events: auto;
+            -webkit-tap-highlight-color: transparent;
+        }
+        #ok-btn:active, #no-btn:active {
+            transform: scale(0.95);
+        }
+
+        #ending-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('end.png');
+            background-size: cover;
+            background-position: center;
+            z-index: 5000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #ending-content {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #ebg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        #result-canvases {
+            position: relative;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .captured-canvas {
+            border: 1px solid #000;
+            background: white;
+        }
+
+        .canvas-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .canvas-container canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            touch-action: none;
+        }
+
+        .canvas-container {
+            box-sizing: border-box;
+        }
+
+        .fade {
+            transition: opacity 0.5s ease-in-out;
+        }
+        .fade-out {
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="start-overlay">
+            <img src="start.png" alt="시작">
+        </div>
+        <div id="layer-fbg" class="layer">
+            <img src="fbg.png" class="bg-img" alt="전체배경">
+        </div>
+        <!-- 스크린창 -->
+        <div id="screen-window">
+            <div id="layer-bg" class="layer">
+                <img src="bg.png" id="bg-img" class="bg-img" alt="배경">
+            </div>
+            <!-- House is behind the player -->
+            <div id="layer-house-bg" class="layer">
+                <img src="house.png" id="house" class="item" alt="집">
+            </div>
+            <div id="layer-drawing" class="layer">
+                <!-- 동적 드로잉 레이어 -->
+            </div>
+            <div id="layer-items" class="layer">
+                <img src="art.png" id="art-item" class="item" alt="아트">
+                <img src="cook.png" id="cook-item" class="item" alt="요리" style="display:none; right: 50px; bottom: 50px;">
+                <img src="door.png" id="door-item" class="item" alt="문" style="display:none; left: 20px; bottom: 50px;">
+            </div>
+            <div id="layer-character" class="layer">
+                <img id="player" src="p.png">
+            </div>
+            <div id="layer-speech" class="layer">
+                <img src="star.png" id="star" alt="별">
+                <div id="speech-bubble-container" class="fade">
+                    <img src="w.png" id="speech-bubble" alt="말풍선">
+                    <img src="a1.png" id="guide-a" class="blink" alt="가이드">
+                </div>
+            </div>
+            <img src="y.png" id="yes-btn" alt="예">
+            <div id="layer-ui" class="layer">
+            </div>
+        </div>
+
+        <!-- 하단 컨트롤러 -->
+        <div id="controls">
+            <div class="control-group">
+                <div id="btn-left" class="btn"><img src="l.png" alt="왼쪽"></div>
+                <div id="btn-right" class="btn"><img src="r.png" alt="오른쪽"></div>
+            </div>
+            <div class="control-group">
+                <div id="btn-jump" class="btn"><img src="j.png" alt="점프"></div>
+                <div id="btn-action" class="btn"><img src="a.png" alt="상호작용"></div>
+            </div>
+        </div>
+
+        <!-- 아트 창 -->
+        <div id="art-window">
+            <img src="name.png" id="art-name-overlay" alt="이름레이어">
+            <img src="X.png" id="exit-btn" alt="닫기">
+            <img src="eraser.png" id="btn-eraser" class="btn" alt="지우개">
+
+            <div id="canvas-left" class="canvas-container">
+                <canvas id="c1" width="200" height="300"></canvas>
+                <img src="ns.png" class="canvas-overlay" alt="오버레이">
+            </div>
+            <div id="canvas-right" class="canvas-container">
+                <canvas id="c2" width="160" height="60"></canvas>
+            </div>
+
+            <div id="art-ui">
+                <div id="palette-controls">
+                    <div id="btn-brush" class="btn"><img src="brush.png" alt="브러쉬"></div>
+                    <div id="btn-bold" class="bold-dots">
+                        <div class="dot" style="width: 14px; height: 14px; left: 10px; top: -5px;"></div>
+                        <div class="dot" style="width: 18px; height: 18px; left: 25px; top: 10px;"></div>
+                        <div class="dot" style="width: 22px; height: 22px; left: 10px; top: 30px;"></div>
+                    </div>
+                </div>
+                <div id="color-palette">
+                    <!-- 색상들이 JS에서 생성됨 -->
+                </div>
+            </div>
+
+            <div id="confirm-exit">
+                <img src="xw.png" id="exit-msg" alt="종료할까요?">
+                <div class="exit-btns">
+                    <img src="OK.png" id="ok-btn" alt="확인">
+                    <img src="NO.png" id="no-btn" alt="취소">
+                </div>
+            </div>
+        </div>
+
+        <!-- 요리 게임 오버레이 -->
+        <div id="cook-game-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index: 2000; display:none; background:url('cookbg.png') center center / cover no-repeat; flex-direction:column; align-items:center; justify-content:center;">
+            <div id="gauge-container" style="position:relative; width:300px; height:40px; background:#444; border:3px solid #fff; border-radius:20px; overflow:hidden;">
+                <div style="position:absolute; left:0; width:25%; height:100%; background:#888;"></div>
+                <div style="position:absolute; left:25%; width:15%; height:100%; background:#aaa;"></div>
+                <div style="position:absolute; left:40%; width:20%; height:100%; background:#fff;"></div>
+                <div style="position:absolute; left:60%; width:15%; height:100%; background:#aaa;"></div>
+                <div style="position:absolute; left:75%; width:25%; height:100%; background:#888;"></div>
+                <div id="gauge-bar" style="position:absolute; left:0; width:8px; height:100%; background:red; box-shadow: 0 0 5px #000;"></div>
+            </div>
+            <!-- Round-specific Cook Image -->
+            <div id="cook-round-img-container" style="margin-top: 20px; height: 100px; display: flex; align-items: center; justify-content: center;">
+                <img id="cook-round-img" src="" style="height: 100%; display: none;">
+            </div>
+            <!-- Temporary A Button for Mobile Cooking -->
+            <div id="cook-mobile-a-btn" style="display:none; margin-top:30px; cursor:pointer; -webkit-tap-highlight-color: transparent;">
+                <img src="a.png" alt="A button" style="width: 80px; height: 80px;">
+            </div>
+            <div id="cook-result-display" style="margin-top:20px; height:60px; display:flex; justify-content:center;">
+                <img id="cook-result-img-node" src="" style="display:none; height:100%;">
+            </div>
+            <div id="cook-rank-display" style="margin-top:20px; display:none; flex-direction:column; align-items:center;">
+                <img id="rank-img" src="" alt="Rank">
+                <img id="re-btn" src="re.png" alt="Retry" style="cursor:pointer; margin-top:10px; display:none;">
+            </div>
+        </div>
+
+        <!-- 요리 드로잉 창 -->
+        <div id="cook-drawing-window" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index: 2500; display:none; background:#7D7D7D;">
+            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); display:flex; flex-direction:column; align-items:center;">
+                <div id="canvas3-container" style="width:150px; height:150px; border-radius:50%; border:none; overflow:hidden; background:white; cursor:crosshair;">
+                    <canvas id="c3" width="150" height="150" style="width:100%; height:100%;"></canvas>
+                </div>
+            </div>
+
+            <!-- 요리 드로잉 UI -->
+            <div id="cook-ui" style="position:absolute; bottom:180px; width:100%; display:flex; flex-direction:column; align-items:center; gap:10px;">
+                <div style="display:flex; gap:15px; align-items:flex-end;">
+                    <div id="btn-brush-cook" class="btn"><img src="brush.png" alt="브러쉬"></div>
+                    <div id="btn-bold-cook" class="bold-dots">
+                        <div class="dot cook-dot" style="width: 14px; height: 14px; left: 10px; top: -5px;"></div>
+                        <div class="dot cook-dot" style="width: 18px; height: 18px; left: 25px; top: 10px;"></div>
+                        <div class="dot cook-dot" style="width: 22px; height: 22px; left: 10px; top: 30px;"></div>
+                    </div>
+                    <img src="eraser.png" id="btn-eraser-cook" class="btn" alt="지우개">
+                </div>
+                <div id="color-palette-cook" style="display:none; grid-template-columns: repeat(8, 30px); gap: 5px; padding: 5px;"></div>
+            </div>
+
+            <img src="end.png" id="cook-end-trigger" style="position:absolute; bottom:60px; right:20px; cursor:pointer;">
+
+            <div id="confirm-exit-cook" style="position:absolute; top:0; left:0; width:100%; height:100%; display:none; flex-direction:column; align-items:center; justify-content:center; background:rgba(0,0,0,0.6); z-index:3000;">
+                <div class="exit-btns">
+                    <img src="OK.png" id="ok-btn-cook" alt="확인">
+                    <img src="NO.png" id="no-btn-cook" alt="취소">
+                </div>
+            </div>
+        </div>
+
+        <!-- 엔딩 화면 -->
+        <div id="ending-screen">
+            <h1>Ending</h1>
+            <div id="ending-content">
+                <img src="ebg.png" id="ebg">
+                <div id="result-canvases"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Asset Preloading
+        const assetUrls = [
+            'p.png', 'pr.png', 'pr2.png', 'prs.png', 'pl.png', 'pl2.png', 'pls.png', 'prj.png', 'plj.png',
+            'start.png', 'bg.png', 'fbg.png', 'm2bg.png', 'star.png', 'w.png', 'w2.png', 'w3.png', 'w4.png',
+            'y.png', 'a.png', 'a1.png', 'art.png', 'house.png', 'name.png', 'X.png', 'eraser.png',
+            'brush.png', 'xw.png', 'OK.png', 'NO.png', 'ns.png', 'end.png', 'ebg.png',
+            'cook.png', 'nice.png', 'good.png', 'mi.png', 'sl.png', 'al.png', 'bl.png', 'cl.png', 're.png', 'door.png', 'w5.png', 'w6.png'
+        ];
+        const loadedAssets = {};
+        let assetsToLoadCount = assetUrls.length;
+
+        function preloadImages(callback) {
+            assetUrls.forEach(url => {
+                const img = new Image();
+                img.onload = () => {
+                    assetsToLoadCount--;
+                    if (assetsToLoadCount === 0) callback();
+                };
+                img.onerror = () => {
+                    assetsToLoadCount--;
+                    console.error("Failed to load asset:", url);
+                    if (assetsToLoadCount === 0) callback();
+                };
+                img.src = url;
+                loadedAssets[url] = img;
+            });
+        }
+
+        const player = document.getElementById('player');
+        const screenWindow = document.getElementById('screen-window');
+        const artItem = document.getElementById('art-item');
+        const houseItem = document.getElementById('house');
+        const cookItem = document.getElementById('cook-item');
+        const doorItem = document.getElementById('door-item');
+
+        let playerX = 50;
+        let playerY = 0; // relative to bottom: 50px
+        let playerVelX = 0;
+        let playerVelY = 0;
+        let isGrounded = true;
+        let canMove = false;
+        let facingRight = true;
+        let isMoving = false;
+        let walkFrame = 1;
+        let walkTimeAccumulator = 0;
+        const walkFrameDuration = 18; // roughly 0.3s at 60fps (60 * 0.3 = 18)
+
+        let speechActive = false;
+        let speechStep = 0;
+        let isFading = false;
+        const speechImages = ['w.png', 'w2.png', 'w3.png', 'w4.png', 'w5.png', 'w6.png'];
+
+        const gravity = 0.5;
+        const jumpPower = 9.6;
+        const moveSpeed = 2.5;
+
+        const keys = {};
+
+        window.addEventListener('keydown', (e) => {
+            keys[e.code] = true;
+            if (e.code === 'KeyZ') handleAction();
+        });
+        window.addEventListener('keyup', (e) => {
+            keys[e.code] = false;
+        });
+
+        // Touch controls
+        function setupButton(id, code) {
+            const btn = document.getElementById(id);
+            btn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                keys[code] = true;
+            });
+            btn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                keys[code] = false;
+            });
+            btn.addEventListener('mousedown', (e) => {
+                keys[code] = true;
+            });
+            btn.addEventListener('mouseup', (e) => {
+                keys[code] = false;
+            });
+        }
+
+        setupButton('btn-left', 'ArrowLeft');
+        setupButton('btn-right', 'ArrowRight');
+        setupButton('btn-jump', 'ControlLeft');
+
+        const actionBtn = document.getElementById('btn-action');
+        actionBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            handleAction();
+        });
+        actionBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            handleAction();
+        }, { passive: false });
+
+        // Fullscreen logic - Auto fullscreen on first interaction
+        function goFullscreen() {
+            const el = document.documentElement;
+            const request = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+
+            if (request && !document.fullscreenElement && !document.webkitFullscreenElement) {
+                request.call(el).catch(err => {
+                    console.log("Fullscreen request failed", err);
+                });
+            }
+
+            // Mobile orientation lock
+            if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock('portrait').catch(() => {});
+            }
+
+            document.removeEventListener('click', goFullscreen);
+            document.removeEventListener('touchstart', goFullscreen);
+        }
+        document.addEventListener('click', goFullscreen);
+        document.addEventListener('touchstart', goFullscreen, { passive: false });
+        document.getElementById('speech-bubble-container').addEventListener('click', advanceSpeech);
+        document.getElementById('yes-btn').addEventListener('click', () => {
+             // Handled in advanceSpeech
+        });
+
+        // Start sequence: Click or touch to start
+        const startOverlay = document.getElementById('start-overlay');
+        function handleStart(e) {
+            if (e) e.preventDefault();
+
+            // Fix: Trigger fullscreen on actual user interaction
+            goFullscreen();
+
+            startOverlay.style.opacity = '0';
+            startOverlay.removeEventListener('click', handleStart);
+            startOverlay.removeEventListener('touchstart', handleStart);
+            setTimeout(() => {
+                startOverlay.style.display = 'none';
+                startOpening();
+            }, 2000);
+        }
+
+        // Only bind start listener after preloading
+        preloadImages(() => {
+            startOverlay.addEventListener('click', handleStart);
+            startOverlay.addEventListener('touchstart', handleStart, { passive: false });
+            startOverlay.style.cursor = 'pointer';
+        });
+
+        function startOpening() {
+            const star = document.getElementById('star');
+            star.style.top = '50%';
+            setTimeout(() => {
+                speechActive = true;
+                isFading = true;
+                const container = document.getElementById('speech-bubble-container');
+                const guideA = document.getElementById('guide-a');
+
+                // Force initial state
+                container.style.display = 'block';
+                container.style.opacity = '0';
+                guideA.style.display = 'block';
+
+                // Allow browser to register display:block before starting transition
+                requestAnimationFrame(() => {
+                    container.style.opacity = '1';
+                    setTimeout(() => {
+                        isFading = false;
+                    }, 500);
+                });
+            }, 1000);
+        }
+
+        function advanceSpeech() {
+            if (!speechActive || isFading) return;
+
+            // Handle last bubbles
+            if (speechStep === 3) {
+                finishOpening();
+                return;
+            }
+            if (speechStep === 5) {
+                finishFinalOpening();
+                return;
+            }
+
+            isFading = true;
+            const container = document.getElementById('speech-bubble-container');
+            const guideA = document.getElementById('guide-a');
+            container.style.opacity = '0';
+
+            // Hide guide button from w2 onwards
+            guideA.style.display = 'none';
+
+            // Wait for fade out (0.5s)
+            setTimeout(() => {
+                speechStep++;
+                const bubbleImg = document.getElementById('speech-bubble');
+
+                const tempImg = new Image();
+                tempImg.onload = () => {
+                    bubbleImg.src = speechImages[speechStep];
+                    container.style.opacity = '1';
+
+                    // Wait for fade in (0.5s)
+                    setTimeout(() => {
+                        isFading = false;
+                    }, 500);
+                };
+                tempImg.src = speechImages[speechStep];
+            }, 500);
+        }
+
+        function finishOpening() {
+            if (isFading) return;
+            isFading = true; // Lock interactions during sequence
+
+            const container = document.getElementById('speech-bubble-container');
+            const yesBtn = document.getElementById('yes-btn');
+            const star = document.getElementById('star');
+
+            // Fade out w4
+            container.style.opacity = '0';
+
+            setTimeout(() => {
+                container.style.display = 'none';
+
+                // Position y.png above player
+                const pH = player.clientHeight || 48;
+                yesBtn.style.left = playerX + 'px';
+                yesBtn.style.bottom = (50 + playerY + pH - 28) + 'px';
+                yesBtn.style.transform = 'translateX(-50%)';
+
+                // Show y.png instantly
+                yesBtn.style.display = 'block';
+
+                // Simultaneously fly star
+                star.classList.add('star-jump-out');
+
+                // Stay for 1 second
+                setTimeout(() => {
+                    // Hide y.png instantly
+                    yesBtn.style.display = 'none';
+                    speechActive = false;
+                    star.style.display = 'none';
+                    star.classList.remove('star-jump-out');
+                    canMove = true;
+                    isFading = false;
+                }, 1000);
+            }, 500);
+        }
+
+        function finishFinalOpening() {
+             const container = document.getElementById('speech-bubble-container');
+             container.style.opacity = '0';
+             setTimeout(() => {
+                 container.style.display = 'none';
+                 document.getElementById('ending-screen').style.display = 'flex';
+             }, 500);
+        }
+
+        let lastTime = 0;
+        function update(timestamp) {
+            if (!lastTime) lastTime = timestamp;
+            const dt = Math.min((timestamp - lastTime) / (1000 / 60), 2.0);
+            lastTime = timestamp;
+
+            if (!canMove) {
+                requestAnimationFrame(update);
+                return;
+            }
+
+            let currentlyMoving = false;
+            if (keys['ArrowRight']) {
+                playerVelX = moveSpeed;
+                facingRight = true;
+                currentlyMoving = true;
+            } else if (keys['ArrowLeft']) {
+                playerVelX = -moveSpeed;
+                facingRight = false;
+                currentlyMoving = true;
+            } else {
+                playerVelX = 0;
+            }
+
+            // Handle transition from moving to stopped
+            if (isMoving && !currentlyMoving) {
+                isMoving = false;
+                if (facingRight) {
+                    player.src = 'prs.png';
+                } else {
+                    player.src = 'pls.png';
+                }
+            } else if (!isMoving && currentlyMoving) {
+                isMoving = true;
+                walkFrame = 1;
+                walkTimeAccumulator = 0;
+            }
+
+            if ((keys['ControlLeft'] || keys['ControlRight']) && isGrounded) {
+                playerVelY = jumpPower;
+                isGrounded = false;
+            }
+
+            playerX += playerVelX * dt;
+            playerY += playerVelY * dt;
+
+            if (!isGrounded) {
+                playerVelY -= gravity * dt;
+            }
+
+            // Screen bounds (player is 64px wide, centered)
+            const halfW = 32;
+            if (playerX < halfW) playerX = halfW;
+            if (playerX > screenWindow.clientWidth - halfW) playerX = screenWindow.clientWidth - halfW;
+
+            if (playerY <= 0) {
+                playerY = 0;
+                playerVelY = 0;
+                isGrounded = true;
+            }
+
+            const maxPlayerY = screenWindow.clientHeight - 50 - player.clientHeight;
+            if (playerY > maxPlayerY) {
+                playerY = maxPlayerY;
+                playerVelY = 0;
+            }
+
+            player.style.left = playerX + 'px';
+            player.style.bottom = (50 + playerY) + 'px';
+
+            // Animation Logic
+            if (!isGrounded) {
+                player.src = facingRight ? 'prj.png' : 'plj.png';
+            } else if (isMoving) {
+                walkTimeAccumulator += dt;
+                if (walkTimeAccumulator >= walkFrameDuration) {
+                    walkTimeAccumulator = 0;
+                    walkFrame = walkFrame === 1 ? 2 : 1;
+                }
+
+                if (facingRight) {
+                    player.src = walkFrame === 1 ? 'pr.png' : 'pr2.png';
+                } else {
+                    player.src = walkFrame === 1 ? 'pl.png' : 'pl2.png';
+                }
+            } else {
+                // Not jumping, not moving
+                if (!player.src.includes('prs.png') && !player.src.includes('pls.png')) {
+                    player.src = 'p.png';
+                }
+            }
+
+            requestAnimationFrame(update);
+        }
+
+        let isArtCaptured = false;
+        let isCookCaptured = false;
+        let currentMap = 1;
+
+        function handleAction() {
+            if (isCooking) {
+                stopCookBar();
+                return;
+            }
+            if (!canMove) {
+                if (speechActive) {
+                    advanceSpeech();
+                }
+                return;
+            }
+
+            const pRect = player.getBoundingClientRect();
+
+            if (currentMap === 1) {
+                // Art item collision
+                if (artItem.style.display !== 'none') {
+                    const artRect = artItem.getBoundingClientRect();
+                    if (isColliding(pRect, artRect) && !isArtCaptured) {
+                        openArtWindow();
+                        return;
+                    }
+                }
+                // House collision
+                const houseRect = houseItem.getBoundingClientRect();
+                if (isColliding(pRect, houseRect) && isArtCaptured) {
+                    transitionToMap2();
+                    return;
+                }
+            } else if (currentMap === 2) {
+                // Cook item collision
+                if (cookItem.style.display !== 'none') {
+                    const cookRect = cookItem.getBoundingClientRect();
+                    if (isColliding(pRect, cookRect) && !isCookCaptured) {
+                        startCookGame();
+                        return;
+                    }
+                }
+                // Door collision
+                const doorRect = doorItem.getBoundingClientRect();
+                if (isColliding(pRect, doorRect)) {
+                    transitionToMap1();
+                    return;
+                }
+            }
+        }
+
+        function isColliding(r1, r2) {
+            return !(r1.right < r2.left || r1.left > r2.right || r1.bottom < r2.top || r1.top > r2.bottom);
+        }
+
+        function transitionToMap2() {
+            currentMap = 2;
+            document.getElementById('bg-img').src = 'm2bg.png';
+            houseItem.style.display = 'none';
+            cookItem.style.display = 'block';
+            doorItem.style.display = 'block';
+            playerX = 50; player.style.left = '50px';
+        }
+
+        function transitionToMap1() {
+            currentMap = 1;
+            document.getElementById('bg-img').src = 'bg.png';
+            doorItem.style.display = 'none';
+            cookItem.style.display = 'none';
+
+            if (isCookCaptured) {
+                // Star return only if cooking game was successful
+                const star = document.getElementById('star');
+                star.style.display = 'block';
+                star.style.top = '-100px';
+                star.classList.remove('star-jump-out');
+                setTimeout(() => {
+                    star.style.top = '50%';
+                    setTimeout(() => {
+                        speechActive = true;
+                        speechStep = 4; // w5
+                        const container = document.getElementById('speech-bubble-container');
+                        const bubbleImg = document.getElementById('speech-bubble');
+                        bubbleImg.src = 'w5.png';
+                        container.style.display = 'block';
+                        container.style.opacity = '1';
+                        canMove = false;
+                    }, 1000);
+                }, 100);
+            } else {
+                // No event if cooking was not completed
+                canMove = true;
+                const star = document.getElementById('star');
+                star.style.display = 'none';
+            }
+        }
+
+        // ART WINDOW
+        function openArtWindow() {
+            canMove = false;
+            document.getElementById('art-window').style.display = 'block';
+            initDrawing();
+        }
+
+        const c1 = document.getElementById('c1');
+        const c2 = document.getElementById('c2');
+        const ctx1 = c1.getContext('2d');
+        const ctx2 = c2.getContext('2d');
+        let currentBrushColor = '#262626';
+        let isDrawing = false;
+        let isEraser = false;
+        let brushSizeStage = 0; // 0, 1, 2
+        const brushSizes = [2, 5, 10];
+
+        function initDrawing() {
+            const dots = document.querySelectorAll('.dot:not(.cook-dot)');
+            dots.forEach((dot, i) => {
+                dot.style.backgroundColor = (i === brushSizeStage) ? '#7D7D7D' : '#FFFFFF';
+            });
+
+            const palette = document.getElementById('color-palette');
+            if (palette.children.length === 0) {
+                const colors = ['#B1B1B1', '#262626', '#FFFFFF', '#FF2D30', '#FFE5D1', '#FFB44B', '#FFFF4B', '#DDFFA2', '#399844', '#8EFDFD', '#2753C1', '#D6BEFF', '#9B33DF', '#FFCAF1', '#FF52F7', '#9C5D2C'];
+                colors.forEach(color => {
+                    const opt = document.createElement('div');
+                    opt.className = 'color-opt';
+                    opt.style.backgroundColor = color;
+                    opt.onclick = () => {
+                        currentBrushColor = color;
+                        isEraser = false;
+                        palette.style.display = 'none';
+                    };
+                    palette.appendChild(opt);
+                });
+            }
+
+            setupCanvas(c1, ctx1);
+            setupCanvas(c2, ctx2);
+        }
+
+        function setupCanvas(canvas, ctx) {
+            function getPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                let cx, cy;
+                if (e.touches && e.touches.length > 0) {
+                    cx = e.touches[0].clientX;
+                    cy = e.touches[0].clientY;
+                } else if (e.changedTouches && e.changedTouches.length > 0) {
+                    cx = e.changedTouches[0].clientX;
+                    cy = e.changedTouches[0].clientY;
+                } else {
+                    cx = e.clientX;
+                    cy = e.clientY;
+                }
+                let x = (cx - rect.left) * (canvas.width / rect.width);
+                let y = (cy - rect.top) * (canvas.height / rect.height);
+                x = Math.max(0, Math.min(canvas.width, x));
+                y = Math.max(0, Math.min(canvas.height, y));
+                return { x, y };
+            }
+            function start(e) {
+                isDrawing = true;
+                const pos = getPos(e);
+                ctx.beginPath();
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.moveTo(pos.x, pos.y);
+                if (e.cancelable) e.preventDefault();
+            }
+            function move(e) {
+                if (!isDrawing) return;
+                const pos = getPos(e);
+                ctx.strokeStyle = isEraser ? '#FFFFFF' : currentBrushColor;
+                const currentWidth = brushSizes[brushSizeStage];
+                ctx.lineWidth = isEraser ? currentWidth * 4 : currentWidth;
+                ctx.lineTo(pos.x, pos.y);
+                ctx.stroke();
+                if (e.cancelable) e.preventDefault();
+            }
+            function end() { isDrawing = false; }
+            canvas.addEventListener('mousedown', start);
+            canvas.addEventListener('mousemove', move);
+            window.addEventListener('mouseup', end);
+            canvas.addEventListener('touchstart', start, { passive: false });
+            canvas.addEventListener('touchmove', move, { passive: false });
+            canvas.addEventListener('touchend', end);
+        }
+
+        document.getElementById('btn-brush').onclick = () => {
+            const palette = document.getElementById('color-palette');
+            const isClosing = palette.style.display === 'grid';
+            palette.style.display = isClosing ? 'none' : 'grid';
+            if (!isClosing) {
+                Array.from(palette.children).forEach(opt => {
+                    const rx = (Math.random() * 6 - 3).toFixed(1);
+                    const ry = (Math.random() * 6 - 3).toFixed(1);
+                    opt.style.transform = `translate(${rx}px, ${ry}px)`;
+                });
+            }
+            isEraser = false;
+        };
+        document.getElementById('btn-eraser').onclick = () => { isEraser = true; document.getElementById('color-palette').style.display = 'none'; };
+        document.getElementById('btn-bold').onclick = () => {
+            brushSizeStage = (brushSizeStage + 1) % 3;
+            const dots = document.querySelectorAll('.dot:not(.cook-dot)');
+            dots.forEach((dot, i) => { dot.style.backgroundColor = (i === brushSizeStage) ? '#7D7D7D' : '#FFFFFF'; });
+        };
+
+        const exitBtn = document.getElementById('exit-btn');
+        const confirmExit = document.getElementById('confirm-exit');
+        const okBtn = document.getElementById('ok-btn');
+        const noBtn = document.getElementById('no-btn');
+        exitBtn.onclick = () => { confirmExit.style.display = 'flex'; };
+        okBtn.onclick = () => { captureArtwork(); };
+        noBtn.onclick = () => { confirmExit.style.display = 'none'; };
+
+        const originalHandleAction = handleAction;
+        handleAction = function() {
+            if (document.getElementById('art-window').style.display === 'block') {
+                if (confirmExit.style.display === 'flex') { captureArtwork(); }
+                else { confirmExit.style.display = 'flex'; }
+                return;
+            }
+            if (document.getElementById('cook-drawing-window').style.display === 'block') {
+                 if (document.getElementById('confirm-exit-cook').style.display === 'flex') { captureCookwork(); }
+                 else { document.getElementById('confirm-exit-cook').style.display = 'flex'; }
+                 return;
+            }
+            originalHandleAction();
+        };
+
+        function captureArtwork() {
+            const resultArea = document.getElementById('result-canvases');
+            const cap1 = document.createElement('canvas');
+            const cap2 = document.createElement('canvas');
+            cap1.width = c1.width; cap1.height = c1.height;
+            cap2.width = c2.width; cap2.height = c2.height;
+            const ctxCap1 = cap1.getContext('2d');
+            const ctxCap2 = cap2.getContext('2d');
+            ctxCap1.drawImage(c1, 0, 0);
+            const overlay = document.querySelector('.canvas-overlay');
+            if (overlay && overlay.complete && overlay.naturalWidth !== 0) { ctxCap1.drawImage(overlay, 0, 0, cap1.width, cap1.height); }
+            ctxCap2.drawImage(c2, 0, 0);
+            cap1.className = 'captured-canvas'; cap2.className = 'captured-canvas';
+            resultArea.appendChild(cap1); resultArea.appendChild(cap2);
+            document.getElementById('art-window').style.display = 'none';
+            confirmExit.style.display = 'none';
+            artItem.style.display = 'none';
+            isArtCaptured = true; canMove = true;
+        }
+
+        // COOKING GAME
+        let isCooking = false;
+        let cookRound = 0;
+        let totalCookScore = 0;
+        let barPos = 0;
+        let barDir = 1;
+        let barSpeed = 5;
+
+        function startCookGame() {
+            canMove = false;
+            isCooking = true;
+            cookRound = 0;
+            totalCookScore = 0;
+            document.getElementById('cook-game-overlay').style.display = 'flex';
+            document.getElementById('cook-rank-display').style.display = 'none';
+            document.getElementById('re-btn').style.display = 'none';
+
+            // Setup mobile A button
+            const mobileABtn = document.getElementById('cook-mobile-a-btn');
+            mobileABtn.style.display = 'block';
+            if (!mobileABtn.dataset.listenerAdded) {
+                const triggerStop = (e) => {
+                    e.preventDefault();
+                    if (isCooking) stopCookBar();
+                };
+                mobileABtn.addEventListener('touchstart', triggerStop, { passive: false });
+                mobileABtn.addEventListener('mousedown', triggerStop);
+                mobileABtn.dataset.listenerAdded = "true";
+            }
+
+            nextCookRound();
+        }
+
+        function nextCookRound() {
+            cookRound++;
+            barPos = 0;
+            barSpeed = 5 + (cookRound * 4);
+            document.getElementById('cook-result-img-node').style.display = 'none';
+
+            // Show round image
+            const roundImg = document.getElementById('cook-round-img');
+            roundImg.src = `cook${cookRound}.png`;
+            roundImg.style.display = 'block';
+
+            document.getElementById('cook-mobile-a-btn').style.visibility = 'visible';
+            requestAnimationFrame(animateCookBar);
+        }
+
+        function animateCookBar() {
+            if (!isCooking) return;
+            barPos += barDir * barSpeed;
+            if (barPos >= 292) { barPos = 292; barDir = -1; }
+            if (barPos <= 0) { barPos = 0; barDir = 1; }
+            document.getElementById('gauge-bar').style.left = barPos + 'px';
+            requestAnimationFrame(animateCookBar);
+        }
+
+        function stopCookBar() {
+            const barMid = barPos + 4;
+            const percent = (barMid / 300) * 100;
+            let score = 0;
+            let img = '';
+
+            if (percent >= 40 && percent <= 60) { score = 3; img = 'nice.png'; }
+            else if ((percent >= 25 && percent < 40) || (percent > 60 && percent <= 75)) { score = 2; img = 'good.png'; }
+            else { score = 1; img = 'mi.png'; }
+
+            totalCookScore += score;
+            const resImg = document.getElementById('cook-result-img-node');
+            resImg.src = img;
+            resImg.style.display = 'block';
+            document.getElementById('cook-mobile-a-btn').style.visibility = 'hidden';
+
+            isCooking = false;
+            setTimeout(() => {
+                if (cookRound < 3) {
+                    isCooking = true;
+                    nextCookRound();
+                } else {
+                    showCookRank();
+                }
+            }, 1000);
+        }
+
+        function showCookRank() {
+            document.getElementById('cook-mobile-a-btn').style.display = 'none';
+            let rankImg = '';
+            let success = false;
+            let colorCount = 0;
+
+            if (totalCookScore >= 9) { rankImg = 'sl.png'; success = true; colorCount = 16; }
+            else if (totalCookScore === 8) { rankImg = 'al.png'; success = true; colorCount = 10; }
+            else if (totalCookScore >= 6) { rankImg = 'bl.png'; success = true; colorCount = 5; }
+            else { rankImg = 'cl.png'; success = false; }
+
+            const rankDisplay = document.getElementById('cook-rank-display');
+            const rankImgNode = document.getElementById('rank-img');
+            rankImgNode.src = rankImg;
+            rankDisplay.style.display = 'flex';
+
+            if (success) {
+                setTimeout(() => {
+                    document.getElementById('cook-game-overlay').style.display = 'none';
+                    openCookDrawing(colorCount);
+                }, 2000);
+            } else {
+                document.getElementById('re-btn').style.display = 'block';
+                document.getElementById('re-btn').onclick = startCookGame;
+            }
+        }
+
+        // COOK DRAWING
+        const c3 = document.getElementById('c3');
+        const ctx3 = c3.getContext('2d');
+        let currentBrushColorCook = '#262626';
+        let brushSizeStageCook = 0;
+
+        function openCookDrawing(count) {
+            document.getElementById('cook-drawing-window').style.display = 'block';
+            const palette = document.getElementById('color-palette-cook');
+            palette.innerHTML = '';
+            const colors = ['#B1B1B1', '#262626', '#FFFFFF', '#FF2D30', '#FFE5D1', '#FFB44B', '#FFFF4B', '#DDFFA2', '#399844', '#8EFDFD', '#2753C1', '#D6BEFF', '#9B33DF', '#FFCAF1', '#FF52F7', '#9C5D2C'];
+            colors.slice(0, count).forEach(color => {
+                const opt = document.createElement('div');
+                opt.className = 'color-opt';
+                opt.style.backgroundColor = color;
+                opt.onclick = () => { currentBrushColorCook = color; palette.style.display = 'none'; };
+                palette.appendChild(opt);
+            });
+            setupCanvas(c3, ctx3);
+        }
+
+        document.getElementById('btn-brush-cook').onclick = () => {
+            const pal = document.getElementById('color-palette-cook');
+            pal.style.display = pal.style.display === 'grid' ? 'none' : 'grid';
+        };
+        document.getElementById('btn-eraser-cook').onclick = () => { currentBrushColorCook = '#FFFFFF'; };
+        document.getElementById('btn-bold-cook').onclick = () => {
+            brushSizeStageCook = (brushSizeStageCook + 1) % 3;
+            const dots = document.querySelectorAll('.cook-dot');
+            dots.forEach((dot, i) => { dot.style.backgroundColor = (i === brushSizeStageCook) ? '#7D7D7D' : '#FFFFFF'; });
+        };
+
+        document.getElementById('cook-end-trigger').onclick = () => { document.getElementById('confirm-exit-cook').style.display = 'flex'; };
+        document.getElementById('ok-btn-cook').onclick = captureCookwork;
+        document.getElementById('no-btn-cook').onclick = () => { document.getElementById('confirm-exit-cook').style.display = 'none'; };
+
+        function captureCookwork() {
+            const resultArea = document.getElementById('result-canvases');
+            const cap3 = document.createElement('canvas');
+            cap3.width = 60; cap3.height = 60;
+            const ctxCap3 = cap3.getContext('2d');
+
+            // Create circular clipping path
+            ctxCap3.beginPath();
+            ctxCap3.arc(30, 30, 30, 0, Math.PI * 2);
+            ctxCap3.clip();
+
+            // Draw from c3 onto 60x60 canvas
+            ctxCap3.drawImage(c3, 0, 0, c3.width, c3.height, 0, 0, 60, 60);
+
+            cap3.className = 'captured-canvas';
+            cap3.style.position = 'absolute';
+            cap3.style.left = '0px';
+            cap3.style.top = '0px';
+            cap3.style.zIndex = '20';
+            cap3.style.border = 'none';
+            cap3.style.borderRadius = '50%';
+
+            resultArea.appendChild(cap3);
+
+            document.getElementById('cook-drawing-window').style.display = 'none';
+            document.getElementById('confirm-exit-cook').style.display = 'none';
+            isCookCaptured = true;
+            canMove = true;
+            cookItem.style.display = 'none';
+        }
+
+        requestAnimationFrame(update);
+    </script>
+</body>
+</html>
