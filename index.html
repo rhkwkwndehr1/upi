@@ -121,8 +121,6 @@
             position: absolute;
             bottom: 50px; /* 바닥 위치 */
             left: 50px;
-            width: 64px;
-            height: 64px;
             object-fit: contain;
             image-rendering: pixelated;
             /* Center the sprite horizontally on its coordinate */
@@ -600,7 +598,10 @@
             </div>
 
             <!-- 요리 드로잉 UI -->
-            <div id="cook-ui" style="position:absolute; bottom:180px; width:100%; display:flex; flex-direction:column-reverse; align-items:center; gap:10px; pointer-events: none;">
+            <div id="cook-ui" style="position:absolute; bottom:120px; width:100%; display:flex; flex-direction:column; align-items:center; pointer-events: none;">
+                <!-- Palette centered ABOVE buttons -->
+                <div id="color-palette-cook" style="display:none; flex-wrap: wrap; justify-content: center; gap: 5px; padding: 10px; pointer-events: auto; width: 100%; max-width: 300px; margin-bottom: 10px;"></div>
+
                 <div style="display:flex; gap:15px; align-items:flex-end; pointer-events: auto;">
                     <div id="btn-brush-cook" class="btn"><img src="brush.png" alt="브러쉬"></div>
                     <div id="btn-bold-cook" class="bold-dots">
@@ -610,11 +611,14 @@
                     </div>
                     <img src="eraser.png" id="btn-eraser-cook" class="btn" alt="지우개">
                 </div>
-                <!-- Palette centered ABOVE buttons, without background, using flex for better centering -->
-                <div id="color-palette-cook" style="display:none; flex-wrap: wrap; justify-content: center; gap: 5px; padding: 10px; pointer-events: auto; width: 100%; max-width: 300px;"></div>
+
+                <!-- Reset Button: 50px below controls -->
+                <div style="margin-top: 50px; pointer-events: auto;">
+                    <img src="re.png" id="btn-reset-cook" class="btn" alt="초기화">
+                </div>
             </div>
 
-            <img src="X.png" id="cook-end-trigger" style="position:absolute; top:20px; right:20px; cursor:pointer;">
+            <img src="X.png" id="cook-end-trigger" style="position:absolute; top:40px; right:20px; cursor:pointer;">
 
             <div id="confirm-exit-cook" style="position:absolute; top:0; left:0; width:100%; height:100%; display:none; flex-direction:column; align-items:center; justify-content:center; background:rgba(0,0,0,0.6); z-index:3000;">
                 <img src="xw.png" id="exit-msg-cook" alt="종료할까요?" style="margin-bottom: 20px;">
@@ -1484,6 +1488,10 @@
             brushSizeStageCook = (brushSizeStageCook + 1) % 3;
             const dots = document.querySelectorAll('.cook-dot');
             dots.forEach((dot, i) => { dot.style.backgroundColor = (i === brushSizeStageCook) ? '#7D7D7D' : '#FFFFFF'; });
+        };
+
+        document.getElementById('btn-reset-cook').onclick = () => {
+            ctx3.clearRect(0, 0, c3.width, c3.height);
         };
 
         document.getElementById('cook-end-trigger').onclick = () => { document.getElementById('confirm-exit-cook').style.display = 'flex'; };
