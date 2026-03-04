@@ -579,8 +579,8 @@
                 <img id="score-r2" src="" style="position:absolute; left:82px; top:110px; width:25px;">
                 <img id="score-r3" src="" style="position:absolute; left:82px; top:170px; width:25px;">
 
-                <!-- Rank stamp: shifted left 15px, down 15px -->
-                <img id="rank-img" src="" alt="Rank" style="position:absolute; top:60px; right:55px;">
+                <!-- Rank stamp: shifted left 21px, down 15px -->
+                <img id="rank-img" src="" alt="Rank" style="position:absolute; top:60px; right:61px;">
 
                 <!-- Control Buttons -->
                 <div style="position:absolute; bottom:25px; right:15px; display:flex; gap:10px;">
@@ -599,7 +599,7 @@
             </div>
 
             <!-- 요리 드로잉 UI -->
-            <div id="cook-ui" style="position:absolute; bottom:180px; width:100%; display:flex; flex-direction:column; align-items:center; gap:10px; pointer-events: none;">
+            <div id="cook-ui" style="position:absolute; bottom:180px; width:100%; display:flex; flex-direction:column-reverse; align-items:center; gap:10px; pointer-events: none;">
                 <div style="display:flex; gap:15px; align-items:flex-end; pointer-events: auto;">
                     <div id="btn-brush-cook" class="btn"><img src="brush.png" alt="브러쉬"></div>
                     <div id="btn-bold-cook" class="bold-dots">
@@ -609,13 +609,14 @@
                     </div>
                     <img src="eraser.png" id="btn-eraser-cook" class="btn" alt="지우개">
                 </div>
-                <!-- Palette centered below buttons, without background -->
-                <div id="color-palette-cook" style="display:none; grid-template-columns: repeat(8, 30px); gap: 5px; padding: 10px; pointer-events: auto; transform: translateY(10px);"></div>
+                <!-- Palette centered ABOVE buttons, without background, using flex for better centering -->
+                <div id="color-palette-cook" style="display:none; flex-wrap: wrap; justify-content: center; gap: 5px; padding: 10px; pointer-events: auto; width: 100%; max-width: 300px;"></div>
             </div>
 
             <img src="X.png" id="cook-end-trigger" style="position:absolute; top:20px; right:20px; cursor:pointer;">
 
             <div id="confirm-exit-cook" style="position:absolute; top:0; left:0; width:100%; height:100%; display:none; flex-direction:column; align-items:center; justify-content:center; background:rgba(0,0,0,0.6); z-index:3000;">
+                <img src="xw.png" id="exit-msg-cook" alt="종료할까요?" style="margin-bottom: 20px;">
                 <div class="exit-btns">
                     <img src="OK.png" id="ok-btn-cook" alt="확인">
                     <img src="NO.png" id="no-btn-cook" alt="취소">
@@ -1452,8 +1453,8 @@
 
         document.getElementById('btn-brush-cook').onclick = () => {
             const pal = document.getElementById('color-palette-cook');
-            const isClosing = pal.style.display === 'grid';
-            pal.style.display = isClosing ? 'none' : 'grid';
+            const isClosing = pal.style.display === 'flex';
+            pal.style.display = isClosing ? 'none' : 'flex';
             if (!isClosing) {
                 Array.from(pal.children).forEach(opt => {
                     const rx = (Math.random() * 6 - 3).toFixed(1);
@@ -1490,12 +1491,11 @@
 
             cap3.className = 'captured-canvas';
             cap3.style.position = 'absolute';
-            // Layout: Canvas 3 at 20px above C1 center, 10px left of C1 left edge
-            // C1 left = 177, C1 top = 50, C1 width = 200, C1 height = 300
-            // Target Left = 177 - 10 = 167px
-            // Target Top = (50 + 150) - 20 - (60 / 2) = 150px
-            cap3.style.left = '167px';
-            cap3.style.top = '150px';
+            // Layout: Canvas 3 moved an additional 10px left and 15px up
+            // New Target Left = 157 - 10 = 147px
+            // New Target Top = 135 - 15 = 120px
+            cap3.style.left = '147px';
+            cap3.style.top = '120px';
             cap3.style.zIndex = '20';
             cap3.style.border = 'none';
             cap3.style.borderRadius = '50%';
