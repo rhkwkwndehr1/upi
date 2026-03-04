@@ -915,6 +915,14 @@
             const dt = Math.min((timestamp - lastTime) / (1000 / 60), 2.0);
             lastTime = timestamp;
 
+            // Cooking Gauge Logic - Moved here to run even when canMove is false
+            if (isCooking) {
+                barPos += barDir * barSpeed * dt;
+                if (barPos >= 292) { barPos = 292; barDir = -1; }
+                if (barPos <= 0) { barPos = 0; barDir = 1; }
+                document.getElementById('gauge-bar').style.left = barPos + 'px';
+            }
+
             if (!canMove) {
                 requestAnimationFrame(update);
                 return;
@@ -978,14 +986,6 @@
 
             player.style.left = playerX + 'px';
             player.style.bottom = (50 + playerY) + 'px';
-
-            // Cooking Gauge Logic - Unified in main update loop for consistent speed
-            if (isCooking) {
-                barPos += barDir * barSpeed * dt;
-                if (barPos >= 292) { barPos = 292; barDir = -1; }
-                if (barPos <= 0) { barPos = 0; barDir = 1; }
-                document.getElementById('gauge-bar').style.left = barPos + 'px';
-            }
 
             // Animation Logic
             if (!isGrounded) {
