@@ -564,9 +564,9 @@
             <div id="cook-result-display" style="margin-top:20px; height:60px; display:flex; justify-content:center;">
                 <img id="cook-result-img-node" src="" style="display:none; height:100%;">
             </div>
-            <div id="cook-rank-display" style="margin-top:20px; display:none; flex-direction:column; align-items:center;">
-                <img id="rank-img" src="" alt="Rank">
-                <img id="re-btn" src="re.png" alt="Retry" style="cursor:pointer; margin-top:10px; display:none;">
+            <div id="cook-rank-display" style="display:none; position:relative; width:340px; height:240px; background:url('js.png') center center / contain no-repeat; margin-top: -100px;">
+                <img id="rank-img" src="" alt="Rank" style="position:absolute; top:20px; right:20px; width: 60px;">
+                <img id="re-btn" src="re.png" alt="Retry" style="position:absolute; bottom:20px; right:20px; cursor:pointer; display:none; width: 80px;">
             </div>
         </div>
 
@@ -1345,27 +1345,30 @@
         function showCookRank() {
             document.getElementById('cook-mobile-a-btn').style.display = 'none';
             let rankImg = '';
-            let success = false;
+            let isSL = false;
             let colorCount = 0;
 
-            if (totalCookScore >= 9) { rankImg = 'sl.png'; success = true; colorCount = 16; }
-            else if (totalCookScore === 8) { rankImg = 'al.png'; success = true; colorCount = 10; }
-            else if (totalCookScore >= 6) { rankImg = 'bl.png'; success = true; colorCount = 5; }
-            else { rankImg = 'cl.png'; success = false; }
+            if (totalCookScore >= 9) { rankImg = 'sl.png'; isSL = true; colorCount = 16; }
+            else if (totalCookScore === 8) { rankImg = 'al.png'; isSL = false; colorCount = 10; }
+            else if (totalCookScore >= 6) { rankImg = 'bl.png'; isSL = false; colorCount = 5; }
+            else { rankImg = 'cl.png'; isSL = false; }
 
             const rankDisplay = document.getElementById('cook-rank-display');
             const rankImgNode = document.getElementById('rank-img');
-            rankImgNode.src = rankImg;
-            rankDisplay.style.display = 'flex';
+            const reBtn = document.getElementById('re-btn');
 
-            if (success) {
+            rankImgNode.src = rankImg;
+            rankDisplay.style.display = 'block';
+
+            if (isSL) {
+                reBtn.style.display = 'none';
                 setTimeout(() => {
                     document.getElementById('cook-game-overlay').style.display = 'none';
                     openCookDrawing(colorCount);
                 }, 2000);
             } else {
-                document.getElementById('re-btn').style.display = 'block';
-                document.getElementById('re-btn').onclick = startCookGame;
+                reBtn.style.display = 'block';
+                reBtn.onclick = startCookGame;
             }
         }
 
