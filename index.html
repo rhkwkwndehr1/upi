@@ -452,6 +452,15 @@
         .fade-out {
             opacity: 0;
         }
+
+        @keyframes boing {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .boing-effect {
+            animation: boing 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
     </style>
 </head>
 <body>
@@ -561,7 +570,7 @@
             <div id="cook-mobile-a-btn" style="display:none; margin-top:30px; cursor:pointer; -webkit-tap-highlight-color: transparent;">
                 <img src="a.png" alt="A button" style="width: 80px; height: 80px;">
             </div>
-            <div id="cook-result-display" style="margin-top:20px; display:flex; justify-content:center;">
+            <div id="cook-result-display" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); z-index:2100; pointer-events:none; display:none;">
                 <img id="cook-result-img-node" src="" style="display:none;">
             </div>
             <div id="cook-rank-display" style="display:none; position:relative; width:340px; height:240px; background:url('js.png') center center / contain no-repeat; margin-top: -50px;">
@@ -570,13 +579,13 @@
                 <img id="score-r2" src="" style="position:absolute; left:82px; top:110px; width:25px;">
                 <img id="score-r3" src="" style="position:absolute; left:82px; top:170px; width:25px;">
 
-                <!-- Rank stamp: shifted right 15px, up 10px -->
-                <img id="rank-img" src="" alt="Rank" style="position:absolute; top:30px; right:30px;">
+                <!-- Rank stamp: shifted left 10px, down 15px -->
+                <img id="rank-img" src="" alt="Rank" style="position:absolute; top:45px; right:40px;">
 
                 <!-- Control Buttons -->
-                <div style="position:absolute; bottom:15px; right:10px; display:flex; gap:10px;">
-                    <img id="re-btn" src="re.png" alt="Retry" style="cursor:pointer; display:none; width: 70px;">
-                    <img id="go-btn" src="go.png" alt="Go" style="cursor:pointer; display:none; width: 70px;">
+                <div style="position:absolute; bottom:25px; right:15px; display:flex; gap:10px;">
+                    <img id="re-btn" src="re.png" alt="Retry" style="cursor:pointer; display:none;">
+                    <img id="go-btn" src="go.png" alt="Go" style="cursor:pointer; display:none;">
                 </div>
             </div>
         </div>
@@ -1341,13 +1350,22 @@
 
             totalCookScore += score;
             roundScores.push(score);
+
+            const resDisplay = document.getElementById('cook-result-display');
             const resImg = document.getElementById('cook-result-img-node');
             resImg.src = img;
+            resDisplay.style.display = 'flex';
             resImg.style.display = 'block';
+            resImg.classList.remove('boing-effect');
+            void resImg.offsetWidth; // Trigger reflow
+            resImg.classList.add('boing-effect');
+
             document.getElementById('cook-mobile-a-btn').style.visibility = 'hidden';
 
             isCooking = false;
             setTimeout(() => {
+                resDisplay.style.display = 'none';
+                resImg.style.display = 'none';
                 if (cookRound < 3) {
                     isCooking = true;
                     nextCookRound();
