@@ -84,8 +84,6 @@
         }
 
         #start-overlay img {
-            width: 100%;
-            height: 100%;
             object-fit: contain;
         }
 
@@ -110,8 +108,6 @@
             position: absolute;
             bottom: 50px; /* 바닥 위치 */
             left: 50px;
-            width: 64px;
-            height: 64px;
             object-fit: contain;
             image-rendering: pixelated;
             /* Center the sprite horizontally on its coordinate */
@@ -188,7 +184,6 @@
             position: absolute;
             top: 49px;
             right: 30px;
-            transform: scale(0.8);
             pointer-events: none;
             display: none;
         }
@@ -418,8 +413,6 @@
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
             pointer-events: none;
             z-index: 10;
         }
@@ -440,6 +433,11 @@
         }
         .fade-out {
             opacity: 0;
+        }
+
+        img[src$=".png"]:not([src="1.png"]):not([src="2.png"]):not([src="3.png"]) {
+            width: auto !important;
+            height: auto !important;
         }
     </style>
 </head>
@@ -543,7 +541,7 @@
                 <div id="gauge-bar" style="position:absolute; left:0; width:8px; height:100%; background:red; box-shadow: 0 0 5px #000;"></div>
             </div>
             <div id="cook-result-display" style="margin-top:20px; height:60px; display:flex; justify-content:center;">
-                <img id="cook-result-img-node" src="" style="display:none; height:100%;">
+                <img id="cook-result-img-node" src="" style="display:none;">
             </div>
             <div id="cook-rank-display" style="margin-top:20px; display:none; flex-direction:column; align-items:center;">
                 <img id="rank-img" src="" alt="Rank">
@@ -553,6 +551,7 @@
 
         <!-- 요리 드로잉 창 -->
         <div id="cook-drawing-window" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index: 2500; display:none; background:#7D7D7D;">
+            <img src="X.png" id="exit-btn-cook" class="btn" alt="닫기" style="position:absolute; top:210px; right:10px; cursor:pointer; z-index:105;">
             <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); display:flex; flex-direction:column; align-items:center;">
                 <div id="canvas3-container" style="width:50px; height:50px; border-radius:50%; border:4px solid #000; overflow:hidden; background:white; cursor:crosshair;">
                     <canvas id="c3" width="50" height="50" style="width:100%; height:100%;"></canvas>
@@ -571,6 +570,7 @@
                     <img src="eraser.png" id="btn-eraser-cook" class="btn" alt="지우개">
                 </div>
                 <div id="color-palette-cook" style="display:none; grid-template-columns: repeat(8, 30px); gap: 5px; padding: 5px;"></div>
+                <img src="re.png" id="re-btn-cook-draw" class="btn" alt="다시하기" style="cursor:pointer; margin-top:50px;">
             </div>
 
             <img src="end.png" id="cook-end-trigger" style="position:absolute; bottom:60px; right:20px; cursor:pointer;">
@@ -713,8 +713,8 @@
             document.removeEventListener('click', goFullscreen);
             document.removeEventListener('touchstart', goFullscreen);
         }
-        document.addEventListener('click', goFullscreen);
-        document.addEventListener('touchstart', goFullscreen, { passive: false });
+        // document.addEventListener('click', goFullscreen);
+        // document.addEventListener('touchstart', goFullscreen, { passive: false });
         document.getElementById('speech-bubble-container').addEventListener('click', advanceSpeech);
         document.getElementById('yes-btn').addEventListener('click', () => {
              // Handled in advanceSpeech
@@ -726,7 +726,7 @@
             if (e) e.preventDefault();
 
             // Fix: Trigger fullscreen on actual user interaction
-            goFullscreen();
+            // goFullscreen();
 
             startOverlay.style.opacity = '0';
             startOverlay.removeEventListener('click', handleStart);
@@ -1316,6 +1316,11 @@
         };
 
         document.getElementById('cook-end-trigger').onclick = () => { document.getElementById('confirm-exit-cook').style.display = 'flex'; };
+        document.getElementById('exit-btn-cook').onclick = () => { document.getElementById('confirm-exit-cook').style.display = 'flex'; };
+        document.getElementById('re-btn-cook-draw').onclick = () => {
+            document.getElementById('cook-drawing-window').style.display = 'none';
+            startCookGame();
+        };
         document.getElementById('ok-btn-cook').onclick = captureCookwork;
         document.getElementById('no-btn-cook').onclick = () => { document.getElementById('confirm-exit-cook').style.display = 'none'; };
 
