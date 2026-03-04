@@ -579,8 +579,8 @@
                 <img id="score-r2" src="" style="position:absolute; left:82px; top:110px; width:25px;">
                 <img id="score-r3" src="" style="position:absolute; left:82px; top:170px; width:25px;">
 
-                <!-- Rank stamp: shifted left 10px, down 15px -->
-                <img id="rank-img" src="" alt="Rank" style="position:absolute; top:60px; right:50px;">
+                <!-- Rank stamp: shifted left 15px, down 15px -->
+                <img id="rank-img" src="" alt="Rank" style="position:absolute; top:60px; right:55px;">
 
                 <!-- Control Buttons -->
                 <div style="position:absolute; bottom:25px; right:15px; display:flex; gap:10px;">
@@ -592,17 +592,15 @@
 
         <!-- 요리 드로잉 창 -->
         <div id="cook-drawing-window" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index: 2500; display:none; background:#7D7D7D;">
-            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); display:flex; flex-direction:column; align-items:center; gap: 20px;">
+            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); display:flex; flex-direction:column; align-items:center;">
                 <div id="canvas3-container" style="width:150px; height:150px; border-radius:50%; border:none; overflow:hidden; background:white; cursor:crosshair;">
                     <canvas id="c3" width="150" height="150" style="width:100%; height:100%;"></canvas>
                 </div>
-                <!-- Palette centered under canvas 3 -->
-                <div id="color-palette-cook" style="display:none; grid-template-columns: repeat(8, 30px); gap: 5px; padding: 10px; background: rgba(255,255,255,0.9); border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 100;"></div>
             </div>
 
             <!-- 요리 드로잉 UI -->
-            <div id="cook-ui" style="position:absolute; bottom:180px; width:100%; display:flex; flex-direction:column; align-items:center; gap:10px;">
-                <div style="display:flex; gap:15px; align-items:flex-end;">
+            <div id="cook-ui" style="position:absolute; bottom:180px; width:100%; display:flex; flex-direction:column; align-items:center; gap:10px; pointer-events: none;">
+                <div style="display:flex; gap:15px; align-items:flex-end; pointer-events: auto;">
                     <div id="btn-brush-cook" class="btn"><img src="brush.png" alt="브러쉬"></div>
                     <div id="btn-bold-cook" class="bold-dots">
                         <div class="dot cook-dot" style="width: 14px; height: 14px; left: 10px; top: -5px;"></div>
@@ -611,6 +609,8 @@
                     </div>
                     <img src="eraser.png" id="btn-eraser-cook" class="btn" alt="지우개">
                 </div>
+                <!-- Palette centered below buttons, without background -->
+                <div id="color-palette-cook" style="display:none; grid-template-columns: repeat(8, 30px); gap: 5px; padding: 10px; pointer-events: auto; transform: translateY(10px);"></div>
             </div>
 
             <img src="X.png" id="cook-end-trigger" style="position:absolute; top:20px; right:20px; cursor:pointer;">
@@ -1130,6 +1130,7 @@
         }
 
         function setupCanvas(canvas, ctx, isCook = false) {
+
             function getPos(e) {
                 const rect = canvas.getBoundingClientRect();
 
@@ -1451,7 +1452,15 @@
 
         document.getElementById('btn-brush-cook').onclick = () => {
             const pal = document.getElementById('color-palette-cook');
-            pal.style.display = pal.style.display === 'grid' ? 'none' : 'grid';
+            const isClosing = pal.style.display === 'grid';
+            pal.style.display = isClosing ? 'none' : 'grid';
+            if (!isClosing) {
+                Array.from(pal.children).forEach(opt => {
+                    const rx = (Math.random() * 6 - 3).toFixed(1);
+                    const ry = (Math.random() * 6 - 3).toFixed(1);
+                    opt.style.transform = `translate(${rx}px, ${ry}px)`;
+                });
+            }
             isEraserCook = false;
         };
         document.getElementById('btn-eraser-cook').onclick = () => { isEraserCook = true; document.getElementById('color-palette-cook').style.display = 'none'; };
@@ -1481,11 +1490,12 @@
 
             cap3.className = 'captured-canvas';
             cap3.style.position = 'absolute';
-            // Layout: Canvas 3 at the bottom-left corner of Canvas 1
-            // C1 left = 177, C1 top = 50, C1 height = 300 -> C1 bottom = 350
-            // C3 size = 60x60. Place C3 so it overlaps C1's bottom-left
-            cap3.style.left = '177px';
-            cap3.style.top = (50 + 300 - 60) + 'px';
+            // Layout: Canvas 3 at 20px above C1 center, 10px left of C1 left edge
+            // C1 left = 177, C1 top = 50, C1 width = 200, C1 height = 300
+            // Target Left = 177 - 10 = 167px
+            // Target Top = (50 + 150) - 20 - (60 / 2) = 150px
+            cap3.style.left = '167px';
+            cap3.style.top = '150px';
             cap3.style.zIndex = '20';
             cap3.style.border = 'none';
             cap3.style.borderRadius = '50%';
