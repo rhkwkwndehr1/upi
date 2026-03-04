@@ -28,14 +28,25 @@
             background-color: #000;
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
             touch-action: none;
+            transform-origin: center center;
         }
 
-        @media (min-height: 820px) {
-            body {
-                display: flex;
-                align-items: center;
-                justify-content: center;
+        @media (max-width: 392px) or (max-height: 820px) {
+            #game-container {
+                transform: scale(min(calc(100vw / 392), calc(100vh / 820)));
             }
+        }
+
+        :fullscreen #game-container, :-webkit-full-screen #game-container {
+            transform: scale(min(calc(100vw / 392), calc(100vh / 820))) !important;
+            margin: auto;
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #000;
         }
 
         /* 게임 화면 스크린창 */
@@ -84,8 +95,6 @@
         }
 
         #start-overlay img {
-            width: 100%;
-            height: 100%;
             object-fit: contain;
         }
 
@@ -110,8 +119,6 @@
             position: absolute;
             bottom: 50px; /* 바닥 위치 */
             left: 50px;
-            width: 64px;
-            height: 64px;
             object-fit: contain;
             image-rendering: pixelated;
             /* Center the sprite horizontally on its coordinate */
@@ -181,14 +188,14 @@
             cursor: pointer;
             z-index: 4000;
             pointer-events: auto;
-            /* No fade animation */
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
         }
 
         #guide-a {
             position: absolute;
             top: 49px;
             right: 30px;
-            transform: scale(0.8);
             pointer-events: none;
             display: none;
         }
@@ -403,23 +410,21 @@
 
         #result-canvases {
             position: relative;
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
+            width: 392px;
+            height: 400px;
             z-index: 10;
         }
 
         .captured-canvas {
             border: 1px solid #000;
             background: white;
+            position: absolute;
         }
 
         .canvas-overlay {
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
             pointer-events: none;
             z-index: 10;
         }
@@ -440,6 +445,20 @@
         }
         .fade-out {
             opacity: 0;
+        }
+
+        @keyframes boing {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .boing-effect {
+            animation: boing 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        img[src$=".png"]:not([src="1.png"]):not([src="2.png"]):not([src="3.png"]) {
+            width: auto !important;
+            height: auto !important;
         }
     </style>
 </head>
@@ -533,7 +552,7 @@
         </div>
 
         <!-- 요리 게임 오버레이 -->
-        <div id="cook-game-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index: 2000; display:none; background:rgba(0,0,0,0.7); flex-direction:column; align-items:center; justify-content:center;">
+        <div id="cook-game-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index: 2000; display:none; background:url('cookbg.png') center center / cover no-repeat; flex-direction:column; align-items:center; justify-content:center;">
             <div id="gauge-container" style="position:relative; width:300px; height:40px; background:#444; border:3px solid #fff; border-radius:20px; overflow:hidden;">
                 <div style="position:absolute; left:0; width:25%; height:100%; background:#888;"></div>
                 <div style="position:absolute; left:25%; width:15%; height:100%; background:#aaa;"></div>
@@ -542,26 +561,47 @@
                 <div style="position:absolute; left:75%; width:25%; height:100%; background:#888;"></div>
                 <div id="gauge-bar" style="position:absolute; left:0; width:8px; height:100%; background:red; box-shadow: 0 0 5px #000;"></div>
             </div>
-            <div id="cook-result-display" style="margin-top:20px; height:60px; display:flex; justify-content:center;">
-                <img id="cook-result-img-node" src="" style="display:none; height:100%;">
+            <!-- Round-specific Cook Image -->
+            <div id="cook-round-img-container" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+                <img id="cook-round-img" src="" style="display: none;">
             </div>
-            <div id="cook-rank-display" style="margin-top:20px; display:none; flex-direction:column; align-items:center;">
-                <img id="rank-img" src="" alt="Rank">
-                <img id="re-btn" src="re.png" alt="Retry" style="cursor:pointer; margin-top:10px; display:none;">
+            <!-- Temporary A Button for Mobile Cooking -->
+            <div id="cook-mobile-a-btn" style="display:none; margin-top:30px; cursor:pointer; -webkit-tap-highlight-color: transparent;">
+                <img src="a2.png" alt="A button">
+            </div>
+            <div id="cook-result-display" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); z-index:2100; pointer-events:none; display:none;">
+                <img id="cook-result-img-node" src="" style="display:none;">
+            </div>
+            <div id="cook-rank-display" style="display:none; position:relative; width:340px; height:240px; background:url('js.png') center center / contain no-repeat; margin-top: -50px;">
+                <!-- Individual Round Scores: shifted right by 17px, R1 down 10px, R3 up 5px -->
+                <img id="score-r1" src="" style="position:absolute; left:82px; top:55px; width:25px;">
+                <img id="score-r2" src="" style="position:absolute; left:82px; top:110px; width:25px;">
+                <img id="score-r3" src="" style="position:absolute; left:82px; top:170px; width:25px;">
+
+                <!-- Rank stamp: shifted left 3px from 51px -> 54px -->
+                <img id="rank-img" src="" alt="Rank" style="position:absolute; top:60px; right:54px;">
+
+                <!-- Control Buttons -->
+                <div style="position:absolute; bottom:25px; right:15px; display:flex; gap:10px;">
+                    <img id="re-btn" src="re.png" alt="Retry" style="cursor:pointer; display:none;">
+                    <img id="go-btn" src="go.png" alt="Go" style="cursor:pointer; display:none;">
+                </div>
             </div>
         </div>
 
         <!-- 요리 드로잉 창 -->
-        <div id="cook-drawing-window" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index: 2500; display:none; background:#7D7D7D;">
+        <div id="cook-drawing-window" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index: 2500; display:none; background:url('cbg.png') center center / cover no-repeat;">
             <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); display:flex; flex-direction:column; align-items:center;">
-                <div id="canvas3-container" style="width:50px; height:50px; border-radius:50%; border:4px solid #000; overflow:hidden; background:white; cursor:crosshair;">
-                    <canvas id="c3" width="50" height="50" style="width:100%; height:100%;"></canvas>
+                <div id="canvas3-container" style="width:150px; height:150px; border-radius:50%; border:none; overflow:hidden; background:white; cursor:crosshair;">
+                    <canvas id="c3" width="150" height="150" style="width:100%; height:100%;"></canvas>
                 </div>
             </div>
 
             <!-- 요리 드로잉 UI -->
-            <div id="cook-ui" style="position:absolute; bottom:180px; width:100%; display:flex; flex-direction:column; align-items:center; gap:10px;">
-                <div style="display:flex; gap:15px; align-items:flex-end;">
+            <div id="cook-ui" style="position:absolute; bottom:120px; width:100%; display:flex; flex-direction:column; align-items:center; pointer-events: none;">
+                <!-- Palette centered ABOVE buttons -->
+                <div id="color-palette-cook" style="display:none; flex-wrap: wrap; justify-content: center; gap: 5px; padding: 10px; pointer-events: auto; width: 100%; max-width: 300px; margin-bottom: 10px;"></div>
+                <div style="display:flex; gap:15px; align-items:flex-end; pointer-events: auto;">
                     <div id="btn-brush-cook" class="btn"><img src="brush.png" alt="브러쉬"></div>
                     <div id="btn-bold-cook" class="bold-dots">
                         <div class="dot cook-dot" style="width: 14px; height: 14px; left: 10px; top: -5px;"></div>
@@ -570,12 +610,13 @@
                     </div>
                     <img src="eraser.png" id="btn-eraser-cook" class="btn" alt="지우개">
                 </div>
-                <div id="color-palette-cook" style="display:none; grid-template-columns: repeat(8, 30px); gap: 5px; padding: 5px;"></div>
+                <img id="re-btn-cook-draw" src="re.png" style="margin-top: 50px; cursor: pointer; pointer-events: auto;">
             </div>
 
-            <img src="end.png" id="cook-end-trigger" style="position:absolute; bottom:60px; right:20px; cursor:pointer;">
+            <img src="X.png" id="cook-end-trigger" style="position:absolute; top:40px; right:20px; cursor:pointer;">
 
             <div id="confirm-exit-cook" style="position:absolute; top:0; left:0; width:100%; height:100%; display:none; flex-direction:column; align-items:center; justify-content:center; background:rgba(0,0,0,0.6); z-index:3000;">
+                <img src="xw.png" id="exit-msg-cook" alt="종료할까요?" style="margin-bottom: 20px;">
                 <div class="exit-btns">
                     <img src="OK.png" id="ok-btn-cook" alt="확인">
                     <img src="NO.png" id="no-btn-cook" alt="취소">
@@ -600,7 +641,8 @@
             'start.png', 'bg.png', 'fbg.png', 'm2bg.png', 'star.png', 'w.png', 'w2.png', 'w3.png', 'w4.png',
             'y.png', 'a.png', 'a1.png', 'art.png', 'house.png', 'name.png', 'X.png', 'eraser.png',
             'brush.png', 'xw.png', 'OK.png', 'NO.png', 'ns.png', 'end.png', 'ebg.png',
-            'cook.png', 'nice.png', 'good.png', 'mi.png', 'sl.png', 'al.png', 'bl.png', 'cl.png', 're.png', 'door.png', 'w5.png', 'w6.png'
+            'cook.png', 'cook1.png', 'cook2.png', 'cook3.png', 'cookbg.png', 'nice.png', 'good.png', 'mi.png', 'sl.png', 'al.png', 'bl.png', 'cl.png', 're.png', 'door.png', 'w5.png', 'w6.png',
+            'js.png', 'go.png', '1.png', '2.png', '3.png', '4.png', '5.png', '6.png', '7.png', '8.png', '9.png', 'a2.png', 'endg.png', 'cbg.png'
         ];
         const loadedAssets = {};
         let assetsToLoadCount = assetUrls.length;
@@ -695,13 +737,12 @@
 
         // Fullscreen logic - Auto fullscreen on first interaction
         function goFullscreen() {
-            const el = document.getElementById('game-container');
+            const el = document.documentElement;
             const request = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
 
-            if (request) {
+            if (request && !document.fullscreenElement && !document.webkitFullscreenElement) {
                 request.call(el).catch(err => {
-                    // Fallback to document
-                    document.documentElement.requestFullscreen().catch(() => {});
+                    console.log("Fullscreen request failed", err);
                 });
             }
 
@@ -713,8 +754,8 @@
             document.removeEventListener('click', goFullscreen);
             document.removeEventListener('touchstart', goFullscreen);
         }
-        document.addEventListener('click', goFullscreen);
-        document.addEventListener('touchstart', goFullscreen, { passive: false });
+        // document.addEventListener('click', goFullscreen);
+        // document.addEventListener('touchstart', goFullscreen, { passive: false });
         document.getElementById('speech-bubble-container').addEventListener('click', advanceSpeech);
         document.getElementById('yes-btn').addEventListener('click', () => {
              // Handled in advanceSpeech
@@ -726,7 +767,7 @@
             if (e) e.preventDefault();
 
             // Fix: Trigger fullscreen on actual user interaction
-            goFullscreen();
+            // goFullscreen();
 
             startOverlay.style.opacity = '0';
             startOverlay.removeEventListener('click', handleStart);
@@ -828,22 +869,27 @@
                 yesBtn.style.bottom = (50 + playerY + pH - 28) + 'px';
                 yesBtn.style.transform = 'translateX(-50%)';
 
-                // Show y.png instantly
+                // Show y.png with fade in
                 yesBtn.style.display = 'block';
+                void yesBtn.offsetWidth; // Trigger reflow
+                yesBtn.style.opacity = '1';
 
                 // Simultaneously fly star
                 star.classList.add('star-jump-out');
 
-                // Stay for 1 second
+                // Stay for 1.5 seconds to allow fade in
                 setTimeout(() => {
-                    // Hide y.png instantly
-                    yesBtn.style.display = 'none';
-                    speechActive = false;
-                    star.style.display = 'none';
-                    star.classList.remove('star-jump-out');
-                    canMove = true;
-                    isFading = false;
-                }, 1000);
+                    // Hide y.png with fade out
+                    yesBtn.style.opacity = '0';
+                    setTimeout(() => {
+                        yesBtn.style.display = 'none';
+                        speechActive = false;
+                        star.style.display = 'none';
+                        star.classList.remove('star-jump-out');
+                        canMove = true;
+                        isFading = false;
+                    }, 500);
+                }, 1500);
             }, 500);
         }
 
@@ -1020,25 +1066,36 @@
             document.getElementById('bg-img').src = 'bg.png';
             doorItem.style.display = 'none';
             cookItem.style.display = 'none';
+            houseItem.style.display = 'block';
 
-            // Star return
-            const star = document.getElementById('star');
-            star.style.display = 'block';
-            star.style.top = '-100px';
-            star.classList.remove('star-jump-out');
-            setTimeout(() => {
-                star.style.top = '50%';
+            // Set player position to house location (392 - 30 - halfWidth)
+            playerX = 392 - 30 - (houseItem.naturalWidth / 2 || 32);
+
+            if (isCookCaptured) {
+                // Star return only if cooking game was successful
+                const star = document.getElementById('star');
+                star.style.display = 'block';
+                star.style.top = '-100px';
+                star.classList.remove('star-jump-out');
                 setTimeout(() => {
-                    speechActive = true;
-                    speechStep = 4; // w5
-                    const container = document.getElementById('speech-bubble-container');
-                    const bubbleImg = document.getElementById('speech-bubble');
-                    bubbleImg.src = 'w5.png';
-                    container.style.display = 'block';
-                    container.style.opacity = '1';
-                    canMove = false;
-                }, 1000);
-            }, 100);
+                    star.style.top = '50%';
+                    setTimeout(() => {
+                        speechActive = true;
+                        speechStep = 4; // w5
+                        const container = document.getElementById('speech-bubble-container');
+                        const bubbleImg = document.getElementById('speech-bubble');
+                        bubbleImg.src = 'w5.png';
+                        container.style.display = 'block';
+                        container.style.opacity = '1';
+                        canMove = false;
+                    }, 1000);
+                }, 100);
+            } else {
+                // No event if cooking was not completed
+                canMove = true;
+                const star = document.getElementById('star');
+                star.style.display = 'none';
+            }
         }
 
         // ART WINDOW
@@ -1066,7 +1123,7 @@
 
             const palette = document.getElementById('color-palette');
             if (palette.children.length === 0) {
-                const colors = ['#B1B1B1', '#262626', '#FFFFFF', '#FF2D30', '#FFE5D1', '#FFB44B', '#FFFF4B', '#DDFFA2', '#399844', '#8EFDFD', '#2753C1', '#D6BEFF', '#9B33DF', '#FFCAF1', '#FF52F7', '#9C5D2C'];
+                const colors = ['#262626', '#FFFBF0', '#FF2D30', '#FFE5D1', '#FFB44B', '#FFFF4B', '#DDFFA2', '#889751', '#399844', '#C6F0F9', '#3C50F1', '#D6BEFF', '#8B4FC5', '#FFCAF1', '#FF91D3', '#6D4130'];
                 colors.forEach(color => {
                     const opt = document.createElement('div');
                     opt.className = 'color-opt';
@@ -1079,14 +1136,18 @@
                     palette.appendChild(opt);
                 });
             }
-
-            setupCanvas(c1, ctx1);
-            setupCanvas(c2, ctx2);
         }
 
-        function setupCanvas(canvas, ctx) {
+        function setupCanvas(canvas, ctx, isCook = false) {
+
             function getPos(e) {
                 const rect = canvas.getBoundingClientRect();
+
+                // Calculate scale based on the game-container's current rendered size vs its base size (392x820)
+                const container = document.getElementById('game-container');
+                const containerRect = container.getBoundingClientRect();
+                const scale = containerRect.width / 392;
+
                 let cx, cy;
                 if (e.touches && e.touches.length > 0) {
                     cx = e.touches[0].clientX;
@@ -1098,13 +1159,22 @@
                     cx = e.clientX;
                     cy = e.clientY;
                 }
-                let x = (cx - rect.left) * (canvas.width / rect.width);
-                let y = (cy - rect.top) * (canvas.height / rect.height);
-                x = Math.max(0, Math.min(canvas.width, x));
-                y = Math.max(0, Math.min(canvas.height, y));
+
+                // Adjust for viewport coordinates to local container coordinates, then divide by scale
+                let x = (cx - rect.left) / scale;
+                let y = (cy - rect.top) / scale;
+
+                // Scale further if the canvas internal size differs from its CSS size
+                x = x * (canvas.width / (rect.width / scale));
+                y = y * (canvas.height / (rect.height / scale));
+
                 return { x, y };
             }
             function start(e) {
+                // Determine if we should start drawing based on window visibility
+                const win = isCook ? 'cook-drawing-window' : 'art-window';
+                if (document.getElementById(win).style.display !== 'block') return;
+
                 isDrawing = true;
                 const pos = getPos(e);
                 ctx.beginPath();
@@ -1116,9 +1186,23 @@
             function move(e) {
                 if (!isDrawing) return;
                 const pos = getPos(e);
-                ctx.strokeStyle = isEraser ? '#FFFFFF' : currentBrushColor;
-                const currentWidth = brushSizes[brushSizeStage];
-                ctx.lineWidth = isEraser ? currentWidth * 4 : currentWidth;
+
+                if (isCook) {
+                    if (isEraserCook) {
+                        ctx.globalCompositeOperation = 'destination-out';
+                    } else {
+                        ctx.globalCompositeOperation = 'source-over';
+                        ctx.strokeStyle = currentBrushColorCook;
+                    }
+                    const currentWidth = brushSizes[brushSizeStageCook];
+                    ctx.lineWidth = isEraserCook ? currentWidth * 4 : currentWidth;
+                } else {
+                    ctx.globalCompositeOperation = 'source-over';
+                    ctx.strokeStyle = isEraser ? '#FFFFFF' : currentBrushColor;
+                    const currentWidth = brushSizes[brushSizeStage];
+                    ctx.lineWidth = isEraser ? currentWidth * 4 : currentWidth;
+                }
+
                 ctx.lineTo(pos.x, pos.y);
                 ctx.stroke();
                 if (e.cancelable) e.preventDefault();
@@ -1187,8 +1271,23 @@
             const overlay = document.querySelector('.canvas-overlay');
             if (overlay && overlay.complete && overlay.naturalWidth !== 0) { ctxCap1.drawImage(overlay, 0, 0, cap1.width, cap1.height); }
             ctxCap2.drawImage(c2, 0, 0);
-            cap1.className = 'captured-canvas'; cap2.className = 'captured-canvas';
-            resultArea.appendChild(cap1); resultArea.appendChild(cap2);
+
+            cap1.className = 'captured-canvas';
+            cap2.className = 'captured-canvas';
+
+            // Layout: Canvas 1 on the right, moved up 40px (50px -> 10px)
+            cap1.style.right = '15px';
+            cap1.style.top = '10px';
+            cap1.style.zIndex = '11';
+
+            // Layout: Canvas 2 on bottom left, aligned with bottom of Canvas 1, also moved up 40px
+            // Layout: Canvas 2 positioned for exact 6px gap with C1 (177 - 6 - 160 = 11)
+            cap2.style.left = '11px';
+            cap2.style.top = (10 + cap1.height - cap2.height + 10) + 'px';
+
+            resultArea.appendChild(cap1);
+            resultArea.appendChild(cap2);
+
             document.getElementById('art-window').style.display = 'none';
             confirmExit.style.display = 'none';
             artItem.style.display = 'none';
@@ -1199,6 +1298,7 @@
         let isCooking = false;
         let cookRound = 0;
         let totalCookScore = 0;
+        let roundScores = [];
         let barPos = 0;
         let barDir = 1;
         let barSpeed = 5;
@@ -1208,9 +1308,24 @@
             isCooking = true;
             cookRound = 0;
             totalCookScore = 0;
+            roundScores = [];
             document.getElementById('cook-game-overlay').style.display = 'flex';
             document.getElementById('cook-rank-display').style.display = 'none';
             document.getElementById('re-btn').style.display = 'none';
+
+            // Setup mobile A button
+            const mobileABtn = document.getElementById('cook-mobile-a-btn');
+            mobileABtn.style.display = 'block';
+            if (!mobileABtn.dataset.listenerAdded) {
+                const triggerStop = (e) => {
+                    e.preventDefault();
+                    if (isCooking) stopCookBar();
+                };
+                mobileABtn.addEventListener('touchstart', triggerStop, { passive: false });
+                mobileABtn.addEventListener('mousedown', triggerStop);
+                mobileABtn.dataset.listenerAdded = "true";
+            }
+
             nextCookRound();
         }
 
@@ -1219,6 +1334,13 @@
             barPos = 0;
             barSpeed = 5 + (cookRound * 4);
             document.getElementById('cook-result-img-node').style.display = 'none';
+
+            // Show round image
+            const roundImg = document.getElementById('cook-round-img');
+            roundImg.src = `cook${cookRound}.png`;
+            roundImg.style.display = 'block';
+
+            document.getElementById('cook-mobile-a-btn').style.visibility = 'visible';
             requestAnimationFrame(animateCookBar);
         }
 
@@ -1242,12 +1364,23 @@
             else { score = 1; img = 'mi.png'; }
 
             totalCookScore += score;
+            roundScores.push(score);
+
+            const resDisplay = document.getElementById('cook-result-display');
             const resImg = document.getElementById('cook-result-img-node');
             resImg.src = img;
+            resDisplay.style.display = 'flex';
             resImg.style.display = 'block';
+            resImg.classList.remove('boing-effect');
+            void resImg.offsetWidth; // Trigger reflow
+            resImg.classList.add('boing-effect');
+
+            document.getElementById('cook-mobile-a-btn').style.visibility = 'hidden';
 
             isCooking = false;
             setTimeout(() => {
+                resDisplay.style.display = 'none';
+                resImg.style.display = 'none';
                 if (cookRound < 3) {
                     isCooking = true;
                     nextCookRound();
@@ -1258,28 +1391,51 @@
         }
 
         function showCookRank() {
+            document.getElementById('cook-mobile-a-btn').style.display = 'none';
+
+            // Set individual round score images
+            document.getElementById('score-r1').src = `${roundScores[0]}.png`;
+            document.getElementById('score-r2').src = `${roundScores[1]}.png`;
+            document.getElementById('score-r3').src = `${roundScores[2]}.png`;
+
             let rankImg = '';
-            let success = false;
+            let status = 'RETRY'; // RETRY, GO, SL
             let colorCount = 0;
 
-            if (totalCookScore >= 9) { rankImg = 'sl.png'; success = true; colorCount = 16; }
-            else if (totalCookScore === 8) { rankImg = 'al.png'; success = true; colorCount = 10; }
-            else if (totalCookScore >= 6) { rankImg = 'bl.png'; success = true; colorCount = 5; }
-            else { rankImg = 'cl.png'; success = false; }
+            if (totalCookScore >= 9) { rankImg = 'sl.png'; status = 'SL'; colorCount = 16; }
+            else if (totalCookScore === 8) { rankImg = 'al.png'; status = 'GO'; colorCount = 10; }
+            else if (totalCookScore >= 6) { rankImg = 'bl.png'; status = 'GO'; colorCount = 5; }
+            else { rankImg = 'cl.png'; status = 'RETRY'; }
 
             const rankDisplay = document.getElementById('cook-rank-display');
             const rankImgNode = document.getElementById('rank-img');
-            rankImgNode.src = rankImg;
-            rankDisplay.style.display = 'flex';
+            const reBtn = document.getElementById('re-btn');
+            const goBtn = document.getElementById('go-btn');
 
-            if (success) {
-                setTimeout(() => {
+            rankImgNode.src = rankImg;
+            rankDisplay.style.display = 'block';
+
+            if (status === 'SL') {
+                // SL: Only show Go button
+                reBtn.style.display = 'none';
+                goBtn.style.display = 'block';
+                goBtn.onclick = () => {
                     document.getElementById('cook-game-overlay').style.display = 'none';
                     openCookDrawing(colorCount);
-                }, 2000);
+                };
+            } else if (status === 'GO') {
+                reBtn.style.display = 'block';
+                goBtn.style.display = 'block';
+                reBtn.onclick = startCookGame;
+                goBtn.onclick = () => {
+                    document.getElementById('cook-game-overlay').style.display = 'none';
+                    openCookDrawing(colorCount);
+                };
             } else {
-                document.getElementById('re-btn').style.display = 'block';
-                document.getElementById('re-btn').onclick = startCookGame;
+                // CL rank: only retry
+                reBtn.style.display = 'block';
+                goBtn.style.display = 'none';
+                reBtn.onclick = startCookGame;
             }
         }
 
@@ -1287,32 +1443,53 @@
         const c3 = document.getElementById('c3');
         const ctx3 = c3.getContext('2d');
         let currentBrushColorCook = '#262626';
+        let isEraserCook = false;
         let brushSizeStageCook = 0;
 
         function openCookDrawing(count) {
             document.getElementById('cook-drawing-window').style.display = 'block';
+            ctx3.clearRect(0, 0, c3.width, c3.height); // Ensure transparent start
             const palette = document.getElementById('color-palette-cook');
             palette.innerHTML = '';
-            const colors = ['#B1B1B1', '#262626', '#FFFFFF', '#FF2D30', '#FFE5D1', '#FFB44B', '#FFFF4B', '#DDFFA2', '#399844', '#8EFDFD', '#2753C1', '#D6BEFF', '#9B33DF', '#FFCAF1', '#FF52F7', '#9C5D2C'];
+            const colors = ['#262626', '#FFFBF0', '#FF2D30', '#FFE5D1', '#FFB44B', '#FFFF4B', '#DDFFA2', '#889751', '#399844', '#C6F0F9', '#3C50F1', '#D6BEFF', '#8B4FC5', '#FFCAF1', '#FF91D3', '#6D4130'];
             colors.slice(0, count).forEach(color => {
                 const opt = document.createElement('div');
                 opt.className = 'color-opt';
                 opt.style.backgroundColor = color;
-                opt.onclick = () => { currentBrushColorCook = color; palette.style.display = 'none'; };
+                opt.onclick = () => {
+                    currentBrushColorCook = color;
+                    isEraserCook = false;
+                    palette.style.display = 'none';
+                    const pal = document.getElementById('color-palette-cook');
+                    pal.style.display = 'none';
+                };
                 palette.appendChild(opt);
             });
-            setupCanvas(c3, ctx3);
         }
 
         document.getElementById('btn-brush-cook').onclick = () => {
             const pal = document.getElementById('color-palette-cook');
-            pal.style.display = pal.style.display === 'grid' ? 'none' : 'grid';
+            const isClosing = pal.style.display === 'flex';
+            pal.style.display = isClosing ? 'none' : 'flex';
+            if (!isClosing) {
+                Array.from(pal.children).forEach(opt => {
+                    const rx = (Math.random() * 6 - 3).toFixed(1);
+                    const ry = (Math.random() * 6 - 3).toFixed(1);
+                    opt.style.transform = `translate(${rx}px, ${ry}px)`;
+                });
+            }
+            isEraserCook = false;
         };
-        document.getElementById('btn-eraser-cook').onclick = () => { currentBrushColorCook = '#FFFFFF'; };
+        document.getElementById('btn-eraser-cook').onclick = () => { isEraserCook = true; document.getElementById('color-palette-cook').style.display = 'none'; };
         document.getElementById('btn-bold-cook').onclick = () => {
             brushSizeStageCook = (brushSizeStageCook + 1) % 3;
             const dots = document.querySelectorAll('.cook-dot');
             dots.forEach((dot, i) => { dot.style.backgroundColor = (i === brushSizeStageCook) ? '#7D7D7D' : '#FFFFFF'; });
+        };
+
+        document.getElementById('re-btn-cook-draw').onclick = () => {
+            document.getElementById('cook-drawing-window').style.display = 'none';
+            startCookGame();
         };
 
         document.getElementById('cook-end-trigger').onclick = () => { document.getElementById('confirm-exit-cook').style.display = 'flex'; };
@@ -1322,12 +1499,38 @@
         function captureCookwork() {
             const resultArea = document.getElementById('result-canvases');
             const cap3 = document.createElement('canvas');
-            cap3.width = c3.width; cap3.height = c3.height;
+            cap3.width = 60; cap3.height = 60;
             const ctxCap3 = cap3.getContext('2d');
-            ctxCap3.drawImage(c3, 0, 0);
+
+            // Create circular clipping path
+            ctxCap3.beginPath();
+            ctxCap3.arc(30, 30, 30, 0, Math.PI * 2);
+            ctxCap3.clip();
+
+            // Draw from c3 onto 60x60 canvas
+            ctxCap3.drawImage(c3, 0, 0, c3.width, c3.height, 0, 0, 60, 60);
+
             cap3.className = 'captured-canvas';
-            // Optional: style it to look circular in the results too if desired
-            // cap3.style.borderRadius = '50%';
+            cap3.style.position = 'absolute';
+            cap3.style.background = 'transparent';
+            cap3.style.border = 'none';
+            // Target position: moved 40px up (105px -> 65px)
+            cap3.style.left = '132px';
+            cap3.style.top = '65px';
+            cap3.style.zIndex = '20';
+            cap3.style.borderRadius = '50%';
+
+            // Add endg.png image: shifted 40px up (75px -> 35px)
+            const endgImg = new Image();
+            endgImg.src = 'endg.png';
+            endgImg.style.position = 'absolute';
+            endgImg.style.left = '32px';
+            endgImg.style.top = '35px';
+            endgImg.style.width = 'auto';
+            endgImg.style.height = 'auto';
+            endgImg.style.zIndex = '15';
+            resultArea.appendChild(endgImg);
+
             resultArea.appendChild(cap3);
 
             document.getElementById('cook-drawing-window').style.display = 'none';
@@ -1336,6 +1539,10 @@
             canMove = true;
             cookItem.style.display = 'none';
         }
+
+        setupCanvas(c1, ctx1);
+        setupCanvas(c2, ctx2);
+        setupCanvas(c3, ctx3, true);
 
         requestAnimationFrame(update);
     </script>
