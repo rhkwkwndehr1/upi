@@ -642,7 +642,7 @@
             'y.png', 'a.png', 'a1.png', 'art.png', 'house.png', 'name.png', 'X.png', 'eraser.png',
             'brush.png', 'xw.png', 'OK.png', 'NO.png', 'ns.png', 'end.png', 'ebg.png',
             'cook.png', 'nice.png', 'good.png', 'mi.png', 'sl.png', 'al.png', 'bl.png', 'cl.png', 're.png', 'door.png', 'w5.png', 'w6.png',
-            'js.png', 'go.png', '1.png', '2.png', '3.png', '4.png', '5.png', '6.png', '7.png', '8.png', '9.png', 'a2.png'
+            'js.png', 'go.png', '1.png', '2.png', '3.png', '4.png', '5.png', '6.png', '7.png', '8.png', '9.png', 'a2.png', 'endg.png'
         ];
         const loadedAssets = {};
         let assetsToLoadCount = assetUrls.length;
@@ -1270,6 +1270,7 @@
             // Layout: Canvas 1 on the right
             cap1.style.right = '15px';
             cap1.style.top = '50px';
+            cap1.style.zIndex = '11';
 
             // Layout: Canvas 2 on bottom left, aligned with bottom of Canvas 1
             // User requested: move right 10px (from 11px to 21px), down 10px
@@ -1499,13 +1500,23 @@
             cap3.style.position = 'absolute';
             cap3.style.background = 'transparent';
             cap3.style.border = 'none';
-            // Layout: 90x90 size, moved left 20px
-            // Previous Target Left: 147px -> New Target Left = 127px
-            cap3.style.left = '127px';
-            cap3.style.top = '135px';
+            // Layout: 90x90 size, moved left 15px, up 25px from (127, 135)
+            // New Target Left = 127 - 15 = 112px
+            // New Target Top = 135 - 25 = 110px
+            cap3.style.left = '112px';
+            cap3.style.top = '110px';
             cap3.style.zIndex = '20';
             cap3.style.border = 'none';
             cap3.style.borderRadius = '50%';
+
+            // Add endg.png image: 50px left of Canvas 3, between C1 and C3
+            const endgImg = new Image();
+            endgImg.src = 'endg.png';
+            endgImg.style.position = 'absolute';
+            endgImg.style.left = '62px'; // 112 - 50
+            endgImg.style.top = '110px';
+            endgImg.style.zIndex = '15';
+            resultArea.appendChild(endgImg);
 
             resultArea.appendChild(cap3);
 
