@@ -20,7 +20,7 @@
         #game-container {
             position: relative;
             width: 392px;
-            height: 898px;
+            height: 920px;
             margin: 0 auto;
             display: flex;
             flex-direction: column;
@@ -31,14 +31,14 @@
             transform-origin: center center;
         }
 
-        @media (max-width: 392px) or (max-height: 898px) {
+        @media (max-width: 392px) or (max-height: 920px) {
             #game-container {
-                transform: scale(min(calc(100vw / 392), calc(100vh / 898)));
+                transform: scale(min(calc(100vw / 392), calc(100vh / 920)));
             }
         }
 
         :fullscreen #game-container, :-webkit-full-screen #game-container {
-            transform: scale(min(calc(100vw / 392), calc(100vh / 898))) !important;
+            transform: scale(min(calc(100vw / 392), calc(100vh / 920))) !important;
             margin: auto;
         }
 
@@ -49,15 +49,15 @@
             background-color: #000;
         }
 
-        /* 게임 화면 스크린창 */
+        /* 게임 화면 스크린창 - fixed height to preserve 820px layout scale */
         #screen-window {
             position: relative;
             width: calc(100% - 10px);
-            height: calc(70% - 10px);
+            height: 564px;
             background-color: #333;
             overflow: hidden;
             border: 2px solid #555;
-            margin-top: 25px;
+            margin-top: 75px;
             box-sizing: border-box;
             z-index: 10;
         }
@@ -142,12 +142,12 @@
             bottom: 50px;
         }
 
-        /* 컨트롤러 레이아웃 */
+        /* 컨트롤러 레이아웃 - fixed height to preserve 820px layout scale */
         #controls {
             position: absolute;
-            bottom: 60px;
+            bottom: 110px;
             width: 100%;
-            height: 30%;
+            height: 246px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -262,7 +262,7 @@
             width: 200px;
             height: 300px;
             left: 10px;
-            top: 200px;
+            top: 250px;
             pointer-events: auto;
         }
 
@@ -270,7 +270,7 @@
             width: 160px;
             height: 60px;
             left: 220px;
-            top: 440px;
+            top: 490px;
             pointer-events: auto;
         }
 
@@ -315,7 +315,7 @@
 
         #exit-btn {
             position: absolute;
-            top: 190px;
+            top: 240px;
             right: 10px;
             cursor: pointer;
             z-index: 105;
@@ -324,7 +324,7 @@
         #btn-eraser {
             position: absolute;
             right: 10px;
-            top: 380px;
+            top: 430px;
             cursor: pointer;
             z-index: 105;
         }
@@ -598,7 +598,7 @@
             </div>
 
             <!-- 요리 드로잉 UI -->
-            <div id="cook-ui" style="position:absolute; bottom:120px; width:100%; display:flex; flex-direction:column; align-items:center; pointer-events: none;">
+            <div id="cook-ui" style="position:absolute; bottom:170px; width:100%; display:flex; flex-direction:column; align-items:center; pointer-events: none;">
                 <!-- Palette centered ABOVE buttons -->
                 <div id="color-palette-cook" style="display:none; flex-wrap: wrap; justify-content: center; gap: 5px; padding: 10px; pointer-events: auto; width: 100%; max-width: 300px; margin-bottom: 10px;"></div>
 
@@ -618,7 +618,7 @@
                 </div>
             </div>
 
-            <img src="X.png" id="cook-end-trigger" style="position:absolute; top:40px; right:20px; cursor:pointer;">
+            <img src="X.png" id="cook-end-trigger" style="position:absolute; top:90px; right:20px; cursor:pointer;">
 
             <div id="confirm-exit-cook" style="position:absolute; top:0; left:0; width:100%; height:100%; display:none; flex-direction:column; align-items:center; justify-content:center; background:rgba(0,0,0,0.6); z-index:3000;">
                 <img src="xw.png" id="exit-msg-cook" alt="종료할까요?" style="margin-bottom: 20px;">
@@ -1150,10 +1150,10 @@
             function getPos(e) {
                 const rect = canvas.getBoundingClientRect();
 
-                // Calculate scale based on the game-container's current rendered size vs its base size (392x898)
+                // Calculate scale based on the game-container's current rendered size vs its base size (392x920)
                 const container = document.getElementById('game-container');
                 const containerRect = container.getBoundingClientRect();
-                const scale = containerRect.height / 898;
+                const scale = containerRect.height / 920;
 
                 let cx, cy;
                 if (e.touches && e.touches.length > 0) {
