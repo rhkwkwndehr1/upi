@@ -568,7 +568,7 @@
             </div>
             <!-- Temporary A Button for Mobile Cooking -->
             <div id="cook-mobile-a-btn" style="display:none; margin-top:30px; cursor:pointer; -webkit-tap-highlight-color: transparent;">
-                <img src="a.png" alt="A button" style="width: 80px; height: 80px;">
+                <img src="a2.png" alt="A button">
             </div>
             <div id="cook-result-display" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); z-index:2100; pointer-events:none; display:none;">
                 <img id="cook-result-img-node" src="" style="display:none;">
@@ -642,7 +642,7 @@
             'y.png', 'a.png', 'a1.png', 'art.png', 'house.png', 'name.png', 'X.png', 'eraser.png',
             'brush.png', 'xw.png', 'OK.png', 'NO.png', 'ns.png', 'end.png', 'ebg.png',
             'cook.png', 'nice.png', 'good.png', 'mi.png', 'sl.png', 'al.png', 'bl.png', 'cl.png', 're.png', 'door.png', 'w5.png', 'w6.png',
-            'js.png', 'go.png', '1.png', '2.png', '3.png', '4.png', '5.png', '6.png', '7.png', '8.png', '9.png'
+            'js.png', 'go.png', '1.png', '2.png', '3.png', '4.png', '5.png', '6.png', '7.png', '8.png', '9.png', 'a2.png'
         ];
         const loadedAssets = {};
         let assetsToLoadCount = assetUrls.length;
@@ -1180,10 +1180,16 @@
                 const pos = getPos(e);
 
                 if (isCook) {
-                    ctx.strokeStyle = isEraserCook ? '#FFFFFF' : currentBrushColorCook;
+                    if (isEraserCook) {
+                        ctx.globalCompositeOperation = 'destination-out';
+                    } else {
+                        ctx.globalCompositeOperation = 'source-over';
+                        ctx.strokeStyle = currentBrushColorCook;
+                    }
                     const currentWidth = brushSizes[brushSizeStageCook];
                     ctx.lineWidth = isEraserCook ? currentWidth * 4 : currentWidth;
                 } else {
+                    ctx.globalCompositeOperation = 'source-over';
                     ctx.strokeStyle = isEraser ? '#FFFFFF' : currentBrushColor;
                     const currentWidth = brushSizes[brushSizeStage];
                     ctx.lineWidth = isEraser ? currentWidth * 4 : currentWidth;
@@ -1266,10 +1272,10 @@
             cap1.style.top = '50px';
 
             // Layout: Canvas 2 on bottom left, aligned with bottom of Canvas 1
-            // Gap of 5px between C2 right and C1 left
+            // Gap of 6px between C2 right and C1 left
             // C1 right: 15, C1 width: 200 -> C1 left: 392 - 215 = 177
-            // C2 width: 160. Target left = 177 - 5 - 160 = 12
-            cap2.style.left = '12px';
+            // C2 width: 160. Target left = 177 - 6 - 160 = 11
+            cap2.style.left = '11px';
             cap2.style.top = (50 + cap1.height - cap2.height) + 'px';
 
             resultArea.appendChild(cap1);
@@ -1491,6 +1497,8 @@
 
             cap3.className = 'captured-canvas';
             cap3.style.position = 'absolute';
+            cap3.style.background = 'transparent';
+            cap3.style.border = 'none';
             // Layout: Canvas 3 moved an additional 10px left and 15px up
             // New Target Left = 157 - 10 = 147px
             // New Target Top = 135 - 15 = 120px
