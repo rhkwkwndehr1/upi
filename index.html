@@ -192,7 +192,8 @@
             cursor: pointer;
             z-index: 4000;
             pointer-events: auto;
-            /* No fade animation */
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
         }
 
         #guide-a {
@@ -579,8 +580,8 @@
                 <img id="score-r2" src="" style="position:absolute; left:82px; top:110px; width:25px;">
                 <img id="score-r3" src="" style="position:absolute; left:82px; top:170px; width:25px;">
 
-                <!-- Rank stamp: adjusted position -->
-                <img id="rank-img" src="" alt="Rank" style="position:absolute; top:60px; right:74px;">
+                <!-- Rank stamp: shifted left 11px, down 15px (10px right from previous 61px) -->
+                <img id="rank-img" src="" alt="Rank" style="position:absolute; top:60px; right:51px;">
 
                 <!-- Control Buttons -->
                 <div style="position:absolute; bottom:25px; right:15px; display:flex; gap:10px;">
@@ -869,22 +870,27 @@
                 yesBtn.style.bottom = (50 + playerY + pH - 28) + 'px';
                 yesBtn.style.transform = 'translateX(-50%)';
 
-                // Show y.png instantly
+                // Show y.png with fade in
                 yesBtn.style.display = 'block';
+                void yesBtn.offsetWidth; // Trigger reflow
+                yesBtn.style.opacity = '1';
 
                 // Simultaneously fly star
                 star.classList.add('star-jump-out');
 
-                // Stay for 1 second
+                // Stay for 1.5 seconds to allow fade in
                 setTimeout(() => {
-                    // Hide y.png instantly
-                    yesBtn.style.display = 'none';
-                    speechActive = false;
-                    star.style.display = 'none';
-                    star.classList.remove('star-jump-out');
-                    canMove = true;
-                    isFading = false;
-                }, 1000);
+                    // Hide y.png with fade out
+                    yesBtn.style.opacity = '0';
+                    setTimeout(() => {
+                        yesBtn.style.display = 'none';
+                        speechActive = false;
+                        star.style.display = 'none';
+                        star.classList.remove('star-jump-out');
+                        canMove = true;
+                        isFading = false;
+                    }, 500);
+                }, 1500);
             }, 500);
         }
 
@@ -1115,7 +1121,7 @@
 
             const palette = document.getElementById('color-palette');
             if (palette.children.length === 0) {
-                const colors = ['#262626', '#FFFBF0', '#FF2D30', '#FFE5D1', '#FFB44B', '#FFFF4B', '#DDFFA2', '#FF91D3', '#399844', '#C6F0F9', '#3C50F1', '#D6BEFF', '#8B4FC5', '#FFCAF1', '#FF91D3', '#6D4130'];
+                const colors = ['#262626', '#FFFBF0', '#FF2D30', '#FFE5D1', '#FFB44B', '#FFFF4B', '#DDFFA2', '#889751', '#399844', '#C6F0F9', '#3C50F1', '#D6BEFF', '#8B4FC5', '#FFCAF1', '#FF91D3', '#6D4130'];
                 colors.forEach(color => {
                     const opt = document.createElement('div');
                     opt.className = 'color-opt';
@@ -1444,7 +1450,7 @@
             ctx3.clearRect(0, 0, c3.width, c3.height); // Ensure transparent start
             const palette = document.getElementById('color-palette-cook');
             palette.innerHTML = '';
-            const colors = ['#262626', '#FFFBF0', '#FF2D30', '#FFE5D1', '#FFB44B', '#FFFF4B', '#DDFFA2', '#FF91D3', '#399844', '#C6F0F9', '#3C50F1', '#D6BEFF', '#8B4FC5', '#FFCAF1', '#FF91D3', '#6D4130'];
+            const colors = ['#262626', '#FFFBF0', '#FF2D30', '#FFE5D1', '#FFB44B', '#FFFF4B', '#DDFFA2', '#889751', '#399844', '#C6F0F9', '#3C50F1', '#D6BEFF', '#8B4FC5', '#FFCAF1', '#FF91D3', '#6D4130'];
             colors.slice(0, count).forEach(color => {
                 const opt = document.createElement('div');
                 opt.className = 'color-opt';
@@ -1485,35 +1491,35 @@
         function captureCookwork() {
             const resultArea = document.getElementById('result-canvases');
             const cap3 = document.createElement('canvas');
-            cap3.width = 90; cap3.height = 90;
+            cap3.width = 60; cap3.height = 60;
             const ctxCap3 = cap3.getContext('2d');
 
             // Create circular clipping path
             ctxCap3.beginPath();
-            ctxCap3.arc(45, 45, 45, 0, Math.PI * 2);
+            ctxCap3.arc(30, 30, 30, 0, Math.PI * 2);
             ctxCap3.clip();
 
-            // Draw from c3 onto 90x90 canvas
-            ctxCap3.drawImage(c3, 0, 0, c3.width, c3.height, 0, 0, 90, 90);
+            // Draw from c3 onto 60x60 canvas
+            ctxCap3.drawImage(c3, 0, 0, c3.width, c3.height, 0, 0, 60, 60);
 
             cap3.className = 'captured-canvas';
             cap3.style.position = 'absolute';
             cap3.style.background = 'transparent';
             cap3.style.border = 'none';
-            // Layout: 90x90 size, shifted left by an additional 20px
-            // Previous Target Left: 142px -> New Target Left = 122px
-            cap3.style.left = '122px';
-            cap3.style.top = '85px';
+            // Positioned at the top-left corner above Canvas 1
+            cap3.style.left = '10px';
+            cap3.style.top = '10px';
             cap3.style.zIndex = '20';
-            cap3.style.border = 'none';
             cap3.style.borderRadius = '50%';
 
-            // Add endg.png image: shifted left by 30px from previous (62, 85)
+            // Add endg.png image: shifted 10px up from 85px -> 75px
             const endgImg = new Image();
             endgImg.src = 'endg.png';
             endgImg.style.position = 'absolute';
             endgImg.style.left = '32px';
-            endgImg.style.top = '85px';
+            endgImg.style.top = '75px';
+            endgImg.style.width = 'auto';
+            endgImg.style.height = 'auto';
             endgImg.style.zIndex = '15';
             resultArea.appendChild(endgImg);
 
