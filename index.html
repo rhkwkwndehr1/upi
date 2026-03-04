@@ -1069,6 +1069,9 @@
             cookItem.style.display = 'none';
             houseItem.style.display = 'block';
 
+            // Set player position to house location (392 - 30 - halfWidth)
+            playerX = 392 - 30 - (houseItem.naturalWidth / 2 || 32);
+
             if (isCookCaptured) {
                 // Star return only if cooking game was successful
                 const star = document.getElementById('star');
@@ -1273,16 +1276,15 @@
             cap1.className = 'captured-canvas';
             cap2.className = 'captured-canvas';
 
-            // Layout: Canvas 1 on the right
+            // Layout: Canvas 1 on the right, moved up 40px (50px -> 10px)
             cap1.style.right = '15px';
-            cap1.style.top = '50px';
+            cap1.style.top = '10px';
             cap1.style.zIndex = '11';
 
-            // Layout: Canvas 2 on bottom left, aligned with bottom of Canvas 1
-            // User requested: move right 10px (from 11px to 21px), down 10px
+            // Layout: Canvas 2 on bottom left, aligned with bottom of Canvas 1, also moved up 40px
             // Layout: Canvas 2 positioned for exact 6px gap with C1 (177 - 6 - 160 = 11)
             cap2.style.left = '11px';
-            cap2.style.top = (50 + cap1.height - cap2.height + 10) + 'px';
+            cap2.style.top = (10 + cap1.height - cap2.height + 10) + 'px';
 
             resultArea.appendChild(cap1);
             resultArea.appendChild(cap2);
@@ -1506,18 +1508,18 @@
             cap3.style.position = 'absolute';
             cap3.style.background = 'transparent';
             cap3.style.border = 'none';
-            // Target position: moved 10px right and 20px down (122px -> 132px, 85px -> 105px)
+            // Target position: moved 40px up (105px -> 65px)
             cap3.style.left = '132px';
-            cap3.style.top = '105px';
+            cap3.style.top = '65px';
             cap3.style.zIndex = '20';
             cap3.style.borderRadius = '50%';
 
-            // Add endg.png image: shifted 10px up from 85px -> 75px
+            // Add endg.png image: shifted 40px up (75px -> 35px)
             const endgImg = new Image();
             endgImg.src = 'endg.png';
             endgImg.style.position = 'absolute';
             endgImg.style.left = '32px';
-            endgImg.style.top = '75px';
+            endgImg.style.top = '35px';
             endgImg.style.width = 'auto';
             endgImg.style.height = 'auto';
             endgImg.style.zIndex = '15';
