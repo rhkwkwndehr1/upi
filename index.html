@@ -1115,7 +1115,7 @@
 
             const palette = document.getElementById('color-palette');
             if (palette.children.length === 0) {
-                const colors = ['#B1B1B1', '#262626', '#FFFFFF', '#FF2D30', '#FFE5D1', '#FFB44B', '#FFFF4B', '#DDFFA2', '#399844', '#8EFDFD', '#2753C1', '#D6BEFF', '#9B33DF', '#FFCAF1', '#FF52F7', '#9C5D2C'];
+                const colors = ['#262626', '#FFFBF0', '#FF2D30', '#FFE5D1', '#FFB44B', '#FFFF4B', '#DDFFA2', '#FF91D3', '#399844', '#C6F0F9', '#3C50F1', '#D6BEFF', '#8B4FC5', '#FFCAF1', '#FF91D3', '#6D4130'];
                 colors.forEach(color => {
                     const opt = document.createElement('div');
                     opt.className = 'color-opt';
@@ -1444,7 +1444,7 @@
             ctx3.clearRect(0, 0, c3.width, c3.height); // Ensure transparent start
             const palette = document.getElementById('color-palette-cook');
             palette.innerHTML = '';
-            const colors = ['#B1B1B1', '#262626', '#FFFFFF', '#FF2D30', '#FFE5D1', '#FFB44B', '#FFFF4B', '#DDFFA2', '#399844', '#8EFDFD', '#2753C1', '#D6BEFF', '#9B33DF', '#FFCAF1', '#FF52F7', '#9C5D2C'];
+            const colors = ['#262626', '#FFFBF0', '#FF2D30', '#FFE5D1', '#FFB44B', '#FFFF4B', '#DDFFA2', '#FF91D3', '#399844', '#C6F0F9', '#3C50F1', '#D6BEFF', '#8B4FC5', '#FFCAF1', '#FF91D3', '#6D4130'];
             colors.slice(0, count).forEach(color => {
                 const opt = document.createElement('div');
                 opt.className = 'color-opt';
@@ -1500,10 +1500,9 @@
             cap3.style.position = 'absolute';
             cap3.style.background = 'transparent';
             cap3.style.border = 'none';
-            // Layout: 90x90 size, shifted left by 40px from previous (182, 85)
-            // New Target Left = 182 - 40 = 142px
-            // New Target Top = 85px
-            cap3.style.left = '142px';
+            // Layout: 90x90 size, shifted left by an additional 20px
+            // Previous Target Left: 142px -> New Target Left = 122px
+            cap3.style.left = '122px';
             cap3.style.top = '85px';
             cap3.style.zIndex = '20';
             cap3.style.border = 'none';
