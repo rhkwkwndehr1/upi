@@ -1493,7 +1493,8 @@
         };
 
         document.getElementById('btn-reset-cook').onclick = () => {
-            ctx3.clearRect(0, 0, c3.width, c3.height);
+            document.getElementById('cook-drawing-window').style.display = 'none';
+            startCookGame();
         };
 
         document.getElementById('cook-end-trigger').onclick = () => { document.getElementById('confirm-exit-cook').style.display = 'flex'; };
