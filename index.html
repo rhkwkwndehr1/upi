@@ -1500,20 +1500,20 @@
             cap3.style.position = 'absolute';
             cap3.style.background = 'transparent';
             cap3.style.border = 'none';
-            // Layout: 90x90 size, shifted right by 70px and up by 25px
-            // New Target Left = 112 + 70 = 182px
-            // New Target Top = 110 - 25 = 85px
-            cap3.style.left = '182px';
+            // Layout: 90x90 size, shifted left by 40px from previous (182, 85)
+            // New Target Left = 182 - 40 = 142px
+            // New Target Top = 85px
+            cap3.style.left = '142px';
             cap3.style.top = '85px';
             cap3.style.zIndex = '20';
             cap3.style.border = 'none';
             cap3.style.borderRadius = '50%';
 
-            // Add endg.png image: 50px left of Canvas 3, between C1 and C3
+            // Add endg.png image: shifted left by 60px from previous (132, 85)
             const endgImg = new Image();
             endgImg.src = 'endg.png';
             endgImg.style.position = 'absolute';
-            endgImg.style.left = '132px'; // 182 - 50
+            endgImg.style.left = '72px'; // 132 - 60
             endgImg.style.top = '85px';
             endgImg.style.zIndex = '15';
             resultArea.appendChild(endgImg);
