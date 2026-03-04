@@ -561,21 +561,20 @@
             <div id="cook-mobile-a-btn" style="display:none; margin-top:30px; cursor:pointer; -webkit-tap-highlight-color: transparent;">
                 <img src="a.png" alt="A button" style="width: 80px; height: 80px;">
             </div>
-            <div id="cook-result-display" style="margin-top:20px; height:60px; display:flex; justify-content:center;">
-                <img id="cook-result-img-node" src="" style="display:none; height:100%;">
+            <div id="cook-result-display" style="margin-top:20px; display:flex; justify-content:center;">
+                <img id="cook-result-img-node" src="" style="display:none;">
             </div>
             <div id="cook-rank-display" style="display:none; position:relative; width:340px; height:240px; background:url('js.png') center center / contain no-repeat; margin-top: -50px;">
-                <!-- Individual Round Scores -->
-                <img id="score-r1" src="" style="position:absolute; left:65px; top:45px; width:25px;">
-                <img id="score-r2" src="" style="position:absolute; left:65px; top:110px; width:25px;">
-                <img id="score-r3" src="" style="position:absolute; left:65px; top:175px; width:25px;">
+                <!-- Individual Round Scores: shifted right by 17px, R1 down 10px, R3 up 5px -->
+                <img id="score-r1" src="" style="position:absolute; left:82px; top:55px; width:25px;">
+                <img id="score-r2" src="" style="position:absolute; left:82px; top:110px; width:25px;">
+                <img id="score-r3" src="" style="position:absolute; left:82px; top:170px; width:25px;">
 
-                <!-- Rank and Total Score -->
-                <img id="rank-img" src="" alt="Rank" style="position:absolute; top:40px; right:45px; width:130px;">
-                <img id="score-total" src="" style="position:absolute; right:100px; top:180px; width:30px;">
+                <!-- Rank stamp: shifted right 15px, up 10px -->
+                <img id="rank-img" src="" alt="Rank" style="position:absolute; top:30px; right:30px;">
 
                 <!-- Control Buttons -->
-                <div style="position:absolute; bottom:-10px; right:10px; display:flex; gap:10px;">
+                <div style="position:absolute; bottom:15px; right:10px; display:flex; gap:10px;">
                     <img id="re-btn" src="re.png" alt="Retry" style="cursor:pointer; display:none; width: 70px;">
                     <img id="go-btn" src="go.png" alt="Go" style="cursor:pointer; display:none; width: 70px;">
                 </div>
@@ -1366,9 +1365,6 @@
             document.getElementById('score-r2').src = `${roundScores[1]}.png`;
             document.getElementById('score-r3').src = `${roundScores[2]}.png`;
 
-            // Set total score image
-            document.getElementById('score-total').src = `${totalCookScore}.png`;
-
             let rankImg = '';
             let status = 'RETRY'; // RETRY, GO, SL
             let colorCount = 0;
@@ -1387,12 +1383,13 @@
             rankDisplay.style.display = 'block';
 
             if (status === 'SL') {
+                // SL: Only show Go button
                 reBtn.style.display = 'none';
-                goBtn.style.display = 'none';
-                setTimeout(() => {
+                goBtn.style.display = 'block';
+                goBtn.onclick = () => {
                     document.getElementById('cook-game-overlay').style.display = 'none';
                     openCookDrawing(colorCount);
-                }, 2000);
+                };
             } else if (status === 'GO') {
                 reBtn.style.display = 'block';
                 goBtn.style.display = 'block';
