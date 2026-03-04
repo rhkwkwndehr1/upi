@@ -579,8 +579,8 @@
                 <img id="score-r2" src="" style="position:absolute; left:82px; top:110px; width:25px;">
                 <img id="score-r3" src="" style="position:absolute; left:82px; top:170px; width:25px;">
 
-                <!-- Rank stamp: shifted left 21px, down 15px -->
-                <img id="rank-img" src="" alt="Rank" style="position:absolute; top:60px; right:61px;">
+                <!-- Rank stamp: adjusted position -->
+                <img id="rank-img" src="" alt="Rank" style="position:absolute; top:60px; right:74px;">
 
                 <!-- Control Buttons -->
                 <div style="position:absolute; bottom:25px; right:15px; display:flex; gap:10px;">
@@ -1272,11 +1272,10 @@
             cap1.style.top = '50px';
 
             // Layout: Canvas 2 on bottom left, aligned with bottom of Canvas 1
-            // Gap of 6px between C2 right and C1 left
-            // C1 right: 15, C1 width: 200 -> C1 left: 392 - 215 = 177
-            // C2 width: 160. Target left = 177 - 6 - 160 = 11
+            // User requested: move right 10px (from 11px to 21px), down 10px
+            // Layout: Canvas 2 positioned for exact 6px gap with C1 (177 - 6 - 160 = 11)
             cap2.style.left = '11px';
-            cap2.style.top = (50 + cap1.height - cap2.height) + 'px';
+            cap2.style.top = (50 + cap1.height - cap2.height + 10) + 'px';
 
             resultArea.appendChild(cap1);
             resultArea.appendChild(cap2);
@@ -1441,6 +1440,7 @@
 
         function openCookDrawing(count) {
             document.getElementById('cook-drawing-window').style.display = 'block';
+            ctx3.clearRect(0, 0, c3.width, c3.height); // Ensure transparent start
             const palette = document.getElementById('color-palette-cook');
             palette.innerHTML = '';
             const colors = ['#B1B1B1', '#262626', '#FFFFFF', '#FF2D30', '#FFE5D1', '#FFB44B', '#FFFF4B', '#DDFFA2', '#399844', '#8EFDFD', '#2753C1', '#D6BEFF', '#9B33DF', '#FFCAF1', '#FF52F7', '#9C5D2C'];
@@ -1484,26 +1484,25 @@
         function captureCookwork() {
             const resultArea = document.getElementById('result-canvases');
             const cap3 = document.createElement('canvas');
-            cap3.width = 60; cap3.height = 60;
+            cap3.width = 90; cap3.height = 90;
             const ctxCap3 = cap3.getContext('2d');
 
             // Create circular clipping path
             ctxCap3.beginPath();
-            ctxCap3.arc(30, 30, 30, 0, Math.PI * 2);
+            ctxCap3.arc(45, 45, 45, 0, Math.PI * 2);
             ctxCap3.clip();
 
-            // Draw from c3 onto 60x60 canvas
-            ctxCap3.drawImage(c3, 0, 0, c3.width, c3.height, 0, 0, 60, 60);
+            // Draw from c3 onto 90x90 canvas
+            ctxCap3.drawImage(c3, 0, 0, c3.width, c3.height, 0, 0, 90, 90);
 
             cap3.className = 'captured-canvas';
             cap3.style.position = 'absolute';
             cap3.style.background = 'transparent';
             cap3.style.border = 'none';
-            // Layout: Canvas 3 moved an additional 10px left and 15px up
-            // New Target Left = 157 - 10 = 147px
-            // New Target Top = 135 - 15 = 120px
-            cap3.style.left = '147px';
-            cap3.style.top = '120px';
+            // Layout: 90x90 size, moved left 20px
+            // Previous Target Left: 147px -> New Target Left = 127px
+            cap3.style.left = '127px';
+            cap3.style.top = '135px';
             cap3.style.zIndex = '20';
             cap3.style.border = 'none';
             cap3.style.borderRadius = '50%';
