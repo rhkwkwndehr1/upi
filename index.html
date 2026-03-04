@@ -979,6 +979,14 @@
             player.style.left = playerX + 'px';
             player.style.bottom = (50 + playerY) + 'px';
 
+            // Cooking Gauge Logic - Unified in main update loop for consistent speed
+            if (isCooking) {
+                barPos += barDir * barSpeed * dt;
+                if (barPos >= 292) { barPos = 292; barDir = -1; }
+                if (barPos <= 0) { barPos = 0; barDir = 1; }
+                document.getElementById('gauge-bar').style.left = barPos + 'px';
+            }
+
             // Animation Logic
             if (!isGrounded) {
                 player.src = facingRight ? 'prj.png' : 'plj.png';
@@ -1340,6 +1348,7 @@
         function nextCookRound() {
             cookRound++;
             barPos = 0;
+            barDir = 1; // Always start in the same direction
             barSpeed = 5 + (cookRound * 4);
             document.getElementById('cook-result-img-node').style.display = 'none';
 
@@ -1349,16 +1358,6 @@
             roundImg.style.display = 'block';
 
             document.getElementById('cook-mobile-a-btn').style.visibility = 'visible';
-            requestAnimationFrame(animateCookBar);
-        }
-
-        function animateCookBar() {
-            if (!isCooking) return;
-            barPos += barDir * barSpeed;
-            if (barPos >= 292) { barPos = 292; barDir = -1; }
-            if (barPos <= 0) { barPos = 0; barDir = 1; }
-            document.getElementById('gauge-bar').style.left = barPos + 'px';
-            requestAnimationFrame(animateCookBar);
         }
 
         function stopCookBar() {
