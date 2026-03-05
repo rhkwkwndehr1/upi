@@ -418,12 +418,34 @@
 
         #save-btn {
             position: absolute;
-            bottom: 40px;
+            bottom: 90px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 2000;
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
+        }
+
+        #save-flash {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 5000;
+            pointer-events: none;
+            display: none;
+        }
+
+        #save-notice {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5100;
+            pointer-events: none;
+            display: none;
         }
 
         #result-canvases {
@@ -657,6 +679,8 @@
             <!-- Top Layer Full Screen Image - Centered on ending-screen -->
             <img src="ebg2.png" id="ebg2" style="position:absolute; top:50%; left:50%; width:auto; height:auto; max-width:100%; max-height:100%; transform:translate(-50%, -50%); z-index: 1000; pointer-events: none; object-fit: contain;">
             <img src="ck.png" id="save-btn" alt="이미지 저장">
+            <div id="save-flash"></div>
+            <img src="save.png" id="save-notice" alt="저장 완료">
         </div>
     </div>
 
@@ -668,7 +692,7 @@
             'y.png', 'a.png', 'a1.png', 'art.png', 'house.png', 'name.png', 'X.png', 'eraser.png',
             'brush.png', 'xw.png', 'OK.png', 'NO.png', 'ns.png', 'end.png', 'ebg.png',
             'cook.png', 'cook1.png', 'cook2.png', 'cook3.png', 'cookbg.png', 'nice.png', 'good.png', 'mi.png', 'sl.png', 'al.png', 'bl.png', 'cl.png', 're.png', 'door.png', 'w5.png', 'w6.png',
-            'js.png', 'go.png', '1.png', '2.png', '3.png', '4.png', '5.png', '6.png', '7.png', '8.png', '9.png', 'a2.png', 'endg.png', 'cbg.png', 'ebg2.png', 'ck.png'
+            'js.png', 'go.png', '1.png', '2.png', '3.png', '4.png', '5.png', '6.png', '7.png', '8.png', '9.png', 'a2.png', 'endg.png', 'cbg.png', 'ebg2.png', 'ck.png', 'save.png'
         ];
         const loadedAssets = {};
         let assetsToLoadCount = assetUrls.length;
@@ -1529,9 +1553,9 @@
 
         function captureCookwork() {
             const resultArea = document.getElementById('result-canvases');
-            const cap3 = document.createElement('canvas');
-            cap3.width = 60; cap3.height = 60;
-            const ctxCap3 = cap3.getContext('2d');
+            const cap3Canvas = document.createElement('canvas');
+            cap3Canvas.width = 60; cap3Canvas.height = 60;
+            const ctxCap3 = cap3Canvas.getContext('2d');
 
             // Create circular clipping path
             ctxCap3.beginPath();
@@ -1540,6 +1564,10 @@
 
             // Draw from c3 onto 60x60 canvas
             ctxCap3.drawImage(c3, 0, 0, c3.width, c3.height, 0, 0, 60, 60);
+
+            // Convert to IMG to ensure only Canvas 1 and 2 are drawn as canvases
+            const cap3 = new Image();
+            cap3.src = cap3Canvas.toDataURL('image/png');
 
             cap3.className = 'captured-canvas';
             cap3.style.position = 'absolute';
@@ -1578,6 +1606,17 @@
         document.getElementById('save-btn').onclick = saveEndingImage;
 
         function saveEndingImage() {
+            // Flash Effect
+            const flash = document.getElementById('save-flash');
+            const notice = document.getElementById('save-notice');
+
+            flash.style.display = 'block';
+            setTimeout(() => {
+                flash.style.display = 'none';
+                notice.style.display = 'block';
+                setTimeout(() => { notice.style.display = 'none'; }, 1500);
+            }, 100);
+
             const saveCanvas = document.createElement('canvas');
             saveCanvas.width = 400;
             saveCanvas.height = 500;
@@ -1590,7 +1629,7 @@
 
             // 1. Background
             const ebg = document.getElementById('ebg');
-            if (ebg.complete) {
+            if (ebg.complete && ebg.naturalWidth !== 0) {
                 sctx.drawImage(ebg, 0, 0, 440, 920);
             }
 
@@ -1624,7 +1663,7 @@
 
             // 3. Top Layer Overlay
             const ebg2 = document.getElementById('ebg2');
-            if (ebg2.complete) {
+            if (ebg2.complete && ebg2.naturalWidth !== 0) {
                 sctx.drawImage(ebg2, 0, 0, 440, 920);
             }
 
