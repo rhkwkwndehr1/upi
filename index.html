@@ -19,7 +19,7 @@
 
         #game-container {
             position: relative;
-            width: 392px;
+            width: 440px;
             height: 920px;
             margin: 0 auto;
             display: flex;
@@ -52,7 +52,7 @@
         /* 게임 화면 스크린창 - fixed height to preserve 820px layout scale */
         #screen-window {
             position: relative;
-            width: calc(100% - 10px);
+            width: calc(100% - 30px);
             height: 564px;
             background-color: #333;
             overflow: hidden;
@@ -269,7 +269,7 @@
         #canvas-right {
             width: 160px;
             height: 60px;
-            left: 202px;
+            left: 190px;
             top: 490px;
             pointer-events: auto;
         }
@@ -316,14 +316,14 @@
         #exit-btn {
             position: absolute;
             top: 240px;
-            right: 10px;
+            right: 34px;
             cursor: pointer;
             z-index: 105;
         }
 
         #btn-eraser {
             position: absolute;
-            right: 10px;
+            right: 34px;
             top: 430px;
             cursor: pointer;
             z-index: 105;
@@ -397,6 +397,8 @@
 
         #ending-content {
             position: relative;
+            width: 100%;
+            height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -407,14 +409,19 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            width: auto;
+            height: auto;
             z-index: 0;
             pointer-events: none;
         }
 
         #result-canvases {
-            position: relative;
-            width: 392px;
+            position: absolute;
+            width: 350px;
             height: 400px;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%) translateX(5px);
             z-index: 10;
         }
 
@@ -1161,7 +1168,7 @@
             function getPos(e) {
                 const rect = canvas.getBoundingClientRect();
 
-                // Calculate scale based on the game-container's current rendered size vs its base size (392x920)
+                // Calculate scale based on the game-container's current rendered size vs its base size (440x920)
                 const container = document.getElementById('game-container');
                 const containerRect = container.getBoundingClientRect();
                 const scale = containerRect.height / 920;
@@ -1294,7 +1301,7 @@
             cap2.className = 'captured-canvas';
 
             // Layout: Canvas 1 on the right, moved up 40px (50px -> 10px)
-            cap1.style.right = '15px';
+            cap1.style.right = '0px';
             cap1.style.top = '10px';
             cap1.style.zIndex = '11';
 
@@ -1529,8 +1536,8 @@
             cap3.style.position = 'absolute';
             cap3.style.background = 'transparent';
             cap3.style.border = 'none';
-            // Target position: moved 40px up (105px -> 65px)
-            cap3.style.left = '132px';
+            // Target position relative to group: moved 40px up (105px -> 65px)
+            cap3.style.left = '117px';
             cap3.style.top = '65px';
             cap3.style.zIndex = '20';
             cap3.style.borderRadius = '50%';
@@ -1539,7 +1546,7 @@
             const endgImg = new Image();
             endgImg.src = 'endg.png';
             endgImg.style.position = 'absolute';
-            endgImg.style.left = '32px';
+            endgImg.style.left = '17px';
             endgImg.style.top = '35px';
             endgImg.style.width = 'auto';
             endgImg.style.height = 'auto';
