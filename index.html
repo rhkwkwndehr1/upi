@@ -421,7 +421,7 @@
             bottom: 90px;
             left: 50%;
             transform: translateX(-50%);
-            z-index: 2000;
+            z-index: 6000;
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
         }
@@ -449,9 +449,11 @@
         }
 
         #result-canvases {
-            position: relative;
-            width: 100%;
-            height: 400px;
+            position: absolute;
+            top: 160px; /* Centered (210px) shifted 50px up = 160px */
+            left: 20px;
+            width: 400px;
+            height: 500px;
             z-index: 10;
         }
 
@@ -1573,17 +1575,19 @@
             cap3.style.position = 'absolute';
             cap3.style.background = 'transparent';
             cap3.style.border = 'none';
-            // Target position: Shifted right another 15px from 127px
-            cap3.style.left = '142px';
-            cap3.style.top = '65px';
+            // Target position: Top-left corner of Canvas 1 (which is at right 45px. 400 - 45 - 200 = 155px)
+            // User requested: "이미지를 캔버스1보다 위 레이어에, 왼쪽 위 모서리쪽에 위치하게 해줘"
+            cap3.style.left = '155px';
+            cap3.style.top = '10px';
             cap3.style.zIndex = '20';
             cap3.style.borderRadius = '50%';
 
-            // Add endg.png image: Shifted right another 15px from 32px
+            // Add endg.png image: User wants it right 30px (which is left 400-30-width).
+            // Width of endg.png unknown but let's assume it was intended to accompany Canvas 1.
             const endgImg = new Image();
             endgImg.src = 'endg.png';
             endgImg.style.position = 'absolute';
-            endgImg.style.left = '47px';
+            endgImg.style.right = '30px';
             endgImg.style.top = '35px';
             endgImg.style.width = 'auto';
             endgImg.style.height = 'auto';
@@ -1643,28 +1647,41 @@
                 return zA - zB;
             });
 
-            const verticalOffset = (920 - 400) / 2;
+            const resultAreaTop = 160;
+            const resultAreaLeft = 20;
 
             elements.forEach(el => {
                 const rect = el.style;
                 const top = parseFloat(rect.top) || 0;
                 let left = 0;
-                if (rect.left) left = parseFloat(rect.left);
-                else if (rect.right) left = 440 - parseFloat(rect.right) - (el.width || el.naturalWidth || 0);
+                const width = (el.width || el.naturalWidth || 0);
+                const height = (el.height || el.naturalHeight || 0);
+                if (rect.left) left = resultAreaLeft + parseFloat(rect.left);
+                else if (rect.right) left = resultAreaLeft + (400 - parseFloat(rect.right) - width);
 
                 if (el.tagName === 'CANVAS') {
-                    sctx.drawImage(el, left, verticalOffset + top);
+                    // Draw white background and border for Canvas 1 & 2
+                    sctx.fillStyle = 'white';
+                    sctx.fillRect(left, resultAreaTop + top, width, height);
+                    sctx.strokeStyle = 'black';
+                    sctx.lineWidth = 1;
+                    sctx.strokeRect(left, resultAreaTop + top, width, height);
+                    sctx.drawImage(el, left, resultAreaTop + top);
                 } else if (el.tagName === 'IMG') {
                     if (el.complete && el.naturalWidth !== 0) {
-                        sctx.drawImage(el, left, verticalOffset + top);
+                        sctx.drawImage(el, left, resultAreaTop + top);
                     }
                 }
             });
 
-            // 3. Top Layer Overlay
+            // 3. Top Layer Overlay (Drawn last to be on top, exactly as on screen)
+            // But centered in the screen.
             const ebg2 = document.getElementById('ebg2');
             if (ebg2.complete && ebg2.naturalWidth !== 0) {
-                sctx.drawImage(ebg2, 0, 0, 440, 920);
+                // ebg2 is positioned with translate(-50%, -50%) at top 50%, left 50%
+                // In 440x920, that's center (220, 460).
+            // Use getBoundingClientRect logic or just draw normally if it matches container
+            sctx.drawImage(ebg2, 0, 0, 440, 920);
             }
 
             // 4. Download
