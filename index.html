@@ -449,11 +449,9 @@
         }
 
         #result-canvases {
-            position: absolute;
-            top: 210px;
-            left: 20px;
-            width: 400px;
-            height: 500px;
+            position: relative;
+            width: 100%;
+            height: 400px;
             z-index: 10;
         }
 
@@ -1336,13 +1334,13 @@
             cap1.className = 'captured-canvas';
             cap2.className = 'captured-canvas';
 
-            // Layout: Canvas 1 on the right
-            cap1.style.right = '25px';
+            // Layout: Canvas 1 on the right, shifted left 20px from 25px
+            cap1.style.right = '45px';
             cap1.style.top = '10px';
             cap1.style.zIndex = '11';
 
-            // Layout: Canvas 2 overlapping Canvas 1
-            cap2.style.left = '1px';
+            // Layout: Canvas 2 overlapping Canvas 1, shifted right 80px from 1px
+            cap2.style.left = '81px';
             cap2.style.top = (10 + cap1.height - cap2.height + 20) + 'px';
             cap2.style.zIndex = '12';
 
@@ -1575,18 +1573,17 @@
             cap3.style.position = 'absolute';
             cap3.style.background = 'transparent';
             cap3.style.border = 'none';
-            // Target position: Top-left corner of Canvas 1 (which is at right 25px. 400 - 25 - 200 = 175px)
-            // User requested: "이미지를 캔버스1보다 위 레이어에, 왼쪽 위 모서리쪽에 위치하게 해줘"
-            cap3.style.left = '175px';
-            cap3.style.top = '10px';
+            // Target position: Shifted right another 15px from 127px
+            cap3.style.left = '142px';
+            cap3.style.top = '65px';
             cap3.style.zIndex = '20';
             cap3.style.borderRadius = '50%';
 
-            // Add endg.png image: previous stable position
+            // Add endg.png image: Shifted right another 15px from 32px
             const endgImg = new Image();
             endgImg.src = 'endg.png';
             endgImg.style.position = 'absolute';
-            endgImg.style.left = '32px';
+            endgImg.style.left = '47px';
             endgImg.style.top = '35px';
             endgImg.style.width = 'auto';
             endgImg.style.height = 'auto';
@@ -1625,63 +1622,53 @@
             saveCanvas.height = 500;
             const sctx = saveCanvas.getContext('2d');
 
-            // Center of 440x920 is (220, 460).
-            // Target capture center is 50px above: (220, 410).
-            // For a 400x500 capture, top-left is (220-200, 410-250) = (20, 160).
+            // Top-left of 400x500 area in 440x920 base coordinates is (20, 160)
             sctx.translate(-20, -160);
 
-            // 1. Background
-            const ebg = document.getElementById('ebg');
-            if (ebg.complete && ebg.naturalWidth !== 0) {
-                sctx.drawImage(ebg, 0, 0, 440, 920);
+            const container = document.getElementById('game-container');
+            const containerRect = container.getBoundingClientRect();
+            const scale = containerRect.height / 920;
+
+            function drawElement(el) {
+                const rect = el.getBoundingClientRect();
+                // Relative to container and rounded to integers for sharpness
+                const x = Math.round((rect.left - containerRect.left) / scale);
+                const y = Math.round((rect.top - containerRect.top) / scale);
+                const w = Math.round(rect.width / scale);
+                const h = Math.round(rect.height / scale);
+
+                if (el.tagName === 'CANVAS') {
+                    // Draw white background and 1px border for Artwork Canvases
+                    sctx.fillStyle = 'white';
+                    sctx.fillRect(x, y, w, h);
+                    sctx.strokeStyle = 'black';
+                    sctx.lineWidth = 1;
+                    sctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+                    sctx.drawImage(el, x, y, w, h);
+                } else if (el.tagName === 'IMG') {
+                    if (el.complete && el.naturalWidth !== 0) {
+                        sctx.drawImage(el, x, y, w, h);
+                    }
+                }
             }
+
+            // 1. Background (ebg)
+            const ebg = document.getElementById('ebg');
+            drawElement(ebg);
 
             // 2. Result elements (Captured Artwork & Cooking) - Sort by z-index
             const resultArea = document.getElementById('result-canvases');
             const elements = Array.from(resultArea.children);
-
             elements.sort((a, b) => {
                 const zA = parseInt(window.getComputedStyle(a).zIndex) || 0;
                 const zB = parseInt(window.getComputedStyle(b).zIndex) || 0;
                 return zA - zB;
             });
+            elements.forEach(drawElement);
 
-            const resultAreaTop = 210;
-            const resultAreaLeft = 20;
-
-            elements.forEach(el => {
-                const rect = el.style;
-                const top = parseFloat(rect.top) || 0;
-                let left = 0;
-                const width = (el.width || el.naturalWidth || 0);
-                const height = (el.height || el.naturalHeight || 0);
-                if (rect.left) left = resultAreaLeft + parseFloat(rect.left);
-                else if (rect.right) left = resultAreaLeft + (400 - parseFloat(rect.right) - width);
-
-                if (el.tagName === 'CANVAS') {
-                    // Draw white background and border for Canvas 1 & 2
-                    sctx.fillStyle = 'white';
-                    sctx.fillRect(left, resultAreaTop + top, width, height);
-                    sctx.strokeStyle = 'black';
-                    sctx.lineWidth = 1;
-                    sctx.strokeRect(left, resultAreaTop + top, width, height);
-                    sctx.drawImage(el, left, resultAreaTop + top);
-                } else if (el.tagName === 'IMG') {
-                    if (el.complete && el.naturalWidth !== 0) {
-                        sctx.drawImage(el, left, resultAreaTop + top);
-                    }
-                }
-            });
-
-            // 3. Top Layer Overlay (Drawn last to be on top, exactly as on screen)
-            // But centered in the screen.
+            // 3. Top Layer Overlay (ebg2)
             const ebg2 = document.getElementById('ebg2');
-            if (ebg2.complete && ebg2.naturalWidth !== 0) {
-                // ebg2 is positioned with translate(-50%, -50%) at top 50%, left 50%
-                // In 440x920, that's center (220, 460).
-            // Use getBoundingClientRect logic or just draw normally if it matches container
-            sctx.drawImage(ebg2, 0, 0, 440, 920);
-            }
+            drawElement(ebg2);
 
             // 4. Download
             const link = document.createElement('a');
