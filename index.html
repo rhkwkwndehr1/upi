@@ -35,12 +35,13 @@
 
         @media (max-width: 440px) or (max-height: 920px) {
             #game-container {
-                transform: scale(min(calc(100vw / 440), calc(100vh / 920)));
+                /* Use svh/dvh for better mobile viewport accuracy */
+                transform: scale(min(calc(100vw / 440), calc(min(100vh, 100svh) / 920)));
             }
         }
 
         :fullscreen #game-container, :-webkit-full-screen #game-container {
-            transform: scale(min(calc(100vw / 440), calc(100vh / 920))) !important;
+            transform: scale(min(calc(100vw / 440), calc(min(100vh, 100svh) / 920))) !important;
             margin: auto;
             max-width: 440px;
             max-height: 920px;
@@ -1685,6 +1686,84 @@
             link.href = saveCanvas.toDataURL('image/png');
             link.click();
         }
+
+        function applySafeMargins() {
+            const container = document.getElementById('game-container');
+            const containerRect = container.getBoundingClientRect();
+            const viewportH = window.innerHeight;
+            const viewportW = window.innerWidth;
+
+            // Detect cut-off: difference between container edge and viewport edge
+            // If positive, edge is inside viewport. If negative, edge is cut off.
+            const topCutoff = containerRect.top;
+            const bottomCutoff = viewportH - containerRect.bottom;
+            const leftCutoff = containerRect.left;
+            const rightCutoff = viewportW - containerRect.right;
+
+            const scale = containerRect.height / 920;
+
+            function adjustElement(id, type, originalValue) {
+                const el = document.getElementById(id);
+                if (!el) return;
+
+                // Base margin needed (30px for top/bottom, 10px for sides)
+                const targetMargin = (type === 'top' || type === 'bottom') ? 30 : 10;
+
+                let currentCutoff = 0;
+                if (type === 'top') currentCutoff = topCutoff;
+                else if (type === 'bottom') currentCutoff = bottomCutoff;
+                else if (type === 'left') currentCutoff = leftCutoff;
+                else if (type === 'right') currentCutoff = rightCutoff;
+
+                // If cut off (currentCutoff < 0) or too close, shift inward
+                if (currentCutoff < targetMargin) {
+                    const shiftInPixels = targetMargin - currentCutoff;
+                    // Scale back to container coordinates
+                    const scaledShift = shiftInPixels / scale;
+                    el.style[type] = (originalValue + scaledShift) + 'px';
+                } else {
+                    el.style[type] = originalValue + 'px';
+                }
+            }
+
+            // Adjust targeted UI elements
+            // Cook X button (top: 90px)
+            adjustElement('cook-end-trigger', 'top', 90);
+            // Cook UI container (bottom: 170px)
+            adjustElement('cook-ui', 'bottom', 170);
+            // Map controls (bottom: 110px)
+            adjustElement('controls', 'bottom', 110);
+            // Ending Save button (bottom: 90px)
+            adjustElement('save-btn', 'bottom', 90);
+
+            // Art window buttons (top: 240px and 430px)
+            adjustElement('exit-btn', 'top', 240);
+            adjustElement('btn-eraser', 'top', 430);
+            // Right-side alignment for art buttons and cook X
+            adjustElement('exit-btn', 'right', 44);
+            adjustElement('btn-eraser', 'right', 44);
+            adjustElement('cook-end-trigger', 'right', 20);
+
+            // Horizontal padding for Map Controls (originally 20px)
+            const controls = document.getElementById('controls');
+            if (controls) {
+                const leftShift = leftCutoff < 10 ? (10 - leftCutoff) / scale : 0;
+                const rightShift = rightCutoff < 10 ? (10 - rightCutoff) / scale : 0;
+                controls.style.paddingLeft = (20 + leftShift) + 'px';
+                controls.style.paddingRight = (20 + rightShift) + 'px';
+            }
+        }
+
+        // Call adjustment on state changes that show new UI
+        const originalOpenArt = openArtWindow;
+        openArtWindow = function() { originalOpenArt(); applySafeMargins(); };
+        const originalStartCook = startCookGame;
+        startCookGame = function() { originalStartCook(); applySafeMargins(); };
+        const originalOpenCookDrawing = openCookDrawing;
+        openCookDrawing = function(c) { originalOpenCookDrawing(c); applySafeMargins(); };
+
+        window.addEventListener('load', applySafeMargins);
+        window.addEventListener('resize', applySafeMargins);
 
         requestAnimationFrame(update);
     </script>
