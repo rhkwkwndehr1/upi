@@ -261,7 +261,7 @@
         #canvas-left {
             width: 200px;
             height: 300px;
-            left: 10px;
+            left: 0;
             top: 250px;
             pointer-events: auto;
         }
@@ -269,7 +269,7 @@
         #canvas-right {
             width: 160px;
             height: 60px;
-            left: 220px;
+            left: 202px;
             top: 490px;
             pointer-events: auto;
         }
@@ -277,8 +277,8 @@
         #art-ui {
             position: absolute;
             bottom: 245px; /* snippet 220 + 25 extra */
-            left: 10px;
-            width: calc(100% - 20px);
+            left: 0;
+            width: 100%;
             display: flex;
             align-items: flex-end;
             gap: 15px;
@@ -520,25 +520,27 @@
             <img src="X.png" id="exit-btn" alt="닫기">
             <img src="eraser.png" id="btn-eraser" class="btn" alt="지우개">
 
-            <div id="canvas-left" class="canvas-container">
-                <canvas id="c1" width="200" height="300"></canvas>
-                <img src="ns.png" class="canvas-overlay" alt="오버레이">
-            </div>
-            <div id="canvas-right" class="canvas-container">
-                <canvas id="c2" width="160" height="60"></canvas>
-            </div>
-
-            <div id="art-ui">
-                <div id="palette-controls">
-                    <div id="btn-brush" class="btn"><img src="brush.png" alt="브러쉬"></div>
-                    <div id="btn-bold" class="bold-dots">
-                        <div class="dot" style="width: 14px; height: 14px; left: 10px; top: -5px;"></div>
-                        <div class="dot" style="width: 18px; height: 18px; left: 25px; top: 10px;"></div>
-                        <div class="dot" style="width: 22px; height: 22px; left: 10px; top: 30px;"></div>
-                    </div>
+            <div id="art-group-container" style="position: absolute; left: 50%; transform: translateX(-50%); width: 362px; height: 100%; top: 0; pointer-events: none;">
+                <div id="canvas-left" class="canvas-container">
+                    <canvas id="c1" width="200" height="300"></canvas>
+                    <img src="ns.png" class="canvas-overlay" alt="오버레이">
                 </div>
-                <div id="color-palette">
-                    <!-- 색상들이 JS에서 생성됨 -->
+                <div id="canvas-right" class="canvas-container">
+                    <canvas id="c2" width="160" height="60"></canvas>
+                </div>
+
+                <div id="art-ui">
+                    <div id="palette-controls">
+                        <div id="btn-brush" class="btn"><img src="brush.png" alt="브러쉬"></div>
+                        <div id="btn-bold" class="bold-dots">
+                            <div class="dot" style="width: 14px; height: 14px; left: 10px; top: -5px;"></div>
+                            <div class="dot" style="width: 18px; height: 18px; left: 25px; top: 10px;"></div>
+                            <div class="dot" style="width: 22px; height: 22px; left: 10px; top: 30px;"></div>
+                        </div>
+                    </div>
+                    <div id="color-palette">
+                        <!-- 색상들이 JS에서 생성됨 -->
+                    </div>
                 </div>
             </div>
 
@@ -1014,6 +1016,7 @@
 
         let isArtCaptured = false;
         let isCookCaptured = false;
+        let lastCalculatedStatus = ''; // Added to track rank status
         let currentMap = 1;
 
         function handleAction() {
@@ -1414,6 +1417,8 @@
             else if (totalCookScore >= 6) { rankImg = 'bl.png'; status = 'GO'; colorCount = 5; }
             else { rankImg = 'cl.png'; status = 'RETRY'; }
 
+            lastCalculatedStatus = status; // Store status for drawing window
+
             const rankDisplay = document.getElementById('cook-rank-display');
             const rankImgNode = document.getElementById('rank-img');
             const reBtn = document.getElementById('re-btn');
@@ -1455,6 +1460,11 @@
 
         function openCookDrawing(count) {
             document.getElementById('cook-drawing-window').style.display = 'block';
+
+            // Hide Reset button if SL rank
+            const resetContainer = document.getElementById('btn-reset-cook').parentElement;
+            resetContainer.style.display = (lastCalculatedStatus === 'SL') ? 'none' : 'block';
+
             ctx3.clearRect(0, 0, c3.width, c3.height); // Ensure transparent start
             const palette = document.getElementById('color-palette-cook');
             palette.innerHTML = '';
