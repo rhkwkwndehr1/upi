@@ -450,7 +450,7 @@
 
         #result-canvases {
             position: absolute;
-            top: 160px; /* Centered (210px) shifted 50px up = 160px */
+            top: 210px;
             left: 20px;
             width: 400px;
             height: 500px;
@@ -1336,13 +1336,13 @@
             cap1.className = 'captured-canvas';
             cap2.className = 'captured-canvas';
 
-            // Layout: Canvas 1 on the right, shifted left 20px from 25px
-            cap1.style.right = '45px';
+            // Layout: Canvas 1 on the right
+            cap1.style.right = '25px';
             cap1.style.top = '10px';
             cap1.style.zIndex = '11';
 
-            // Layout: Canvas 2 overlapping Canvas 1, shifted right 80px from 1px
-            cap2.style.left = '81px';
+            // Layout: Canvas 2 overlapping Canvas 1
+            cap2.style.left = '1px';
             cap2.style.top = (10 + cap1.height - cap2.height + 20) + 'px';
             cap2.style.zIndex = '12';
 
@@ -1575,19 +1575,18 @@
             cap3.style.position = 'absolute';
             cap3.style.background = 'transparent';
             cap3.style.border = 'none';
-            // Target position: Top-left corner of Canvas 1 (which is at right 45px. 400 - 45 - 200 = 155px)
+            // Target position: Top-left corner of Canvas 1 (which is at right 25px. 400 - 25 - 200 = 175px)
             // User requested: "이미지를 캔버스1보다 위 레이어에, 왼쪽 위 모서리쪽에 위치하게 해줘"
-            cap3.style.left = '155px';
+            cap3.style.left = '175px';
             cap3.style.top = '10px';
             cap3.style.zIndex = '20';
             cap3.style.borderRadius = '50%';
 
-            // Add endg.png image: User wants it right 30px (which is left 400-30-width).
-            // Width of endg.png unknown but let's assume it was intended to accompany Canvas 1.
+            // Add endg.png image: previous stable position
             const endgImg = new Image();
             endgImg.src = 'endg.png';
             endgImg.style.position = 'absolute';
-            endgImg.style.right = '30px';
+            endgImg.style.left = '32px';
             endgImg.style.top = '35px';
             endgImg.style.width = 'auto';
             endgImg.style.height = 'auto';
@@ -1647,7 +1646,7 @@
                 return zA - zB;
             });
 
-            const resultAreaTop = 160;
+            const resultAreaTop = 210;
             const resultAreaLeft = 20;
 
             elements.forEach(el => {
