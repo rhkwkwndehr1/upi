@@ -29,6 +29,8 @@
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
             touch-action: none;
             transform-origin: center center;
+            flex-shrink: 0;
+            overflow: hidden;
         }
 
         @media (max-width: 440px) or (max-height: 920px) {
@@ -40,6 +42,8 @@
         :fullscreen #game-container, :-webkit-full-screen #game-container {
             transform: scale(min(calc(100vw / 440), calc(100vh / 920))) !important;
             margin: auto;
+            max-width: 440px;
+            max-height: 920px;
         }
 
         body {
@@ -146,24 +150,29 @@
         #controls {
             position: absolute;
             bottom: 110px;
-            width: 100%;
+            width: 440px;
             height: 246px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 0 20px;
             box-sizing: border-box;
-            pointer-events: auto;
+            pointer-events: none;
+            z-index: 100;
         }
 
         .control-group {
             display: flex;
             gap: 20px;
+            pointer-events: auto;
+            flex-shrink: 0;
+            flex-wrap: nowrap;
         }
 
         .btn {
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
+            flex-shrink: 0;
         }
 
         .btn img {
@@ -278,7 +287,7 @@
             position: absolute;
             bottom: 245px; /* snippet 220 + 25 extra */
             left: 0;
-            width: 100%;
+            width: 365px;
             display: flex;
             align-items: flex-end;
             gap: 10px;
@@ -654,7 +663,7 @@
                 </div>
 
                 <!-- Reset Button: 50px below controls -->
-                <div style="margin-top: 50px; pointer-events: auto;">
+                <div style="margin-top: 50px; pointer-events: auto; flex-shrink: 0;">
                     <img src="re.png" id="btn-reset-cook" class="btn" alt="초기화">
                 </div>
             </div>
