@@ -31,14 +31,14 @@
             transform-origin: center center;
         }
 
-        @media (max-width: 392px) or (max-height: 920px) {
+        @media (max-width: 440px) or (max-height: 920px) {
             #game-container {
-                transform: scale(min(calc(100vw / 392), calc(100vh / 920)));
+                transform: scale(min(calc(100vw / 440), calc(100vh / 920)));
             }
         }
 
         :fullscreen #game-container, :-webkit-full-screen #game-container {
-            transform: scale(min(calc(100vw / 392), calc(100vh / 920))) !important;
+            transform: scale(min(calc(100vw / 440), calc(100vh / 920))) !important;
             margin: auto;
         }
 
@@ -294,7 +294,7 @@
             flex-direction: column;
             gap: 10px;
             align-items: center;
-            transform: translateY(-35px); /* Moved up another 15px */
+            transform: translateY(-15px); /* Exactly 15px up from baseline */
         }
 
         .bold-dots {
@@ -331,7 +331,7 @@
 
         #color-palette {
             position: relative;
-            top: -10px;
+            transform: translateY(-15px); /* Exactly 15px up from baseline */
             display: none;
             grid-template-columns: repeat(8, 30px);
             gap: 5px;
@@ -535,16 +535,18 @@
                 </div>
 
                 <div id="art-ui">
-                    <div id="palette-controls">
-                        <div id="btn-brush" class="btn"><img src="brush.png" alt="브러쉬"></div>
-                        <div id="btn-bold" class="bold-dots">
-                            <div class="dot" style="width: 14px; height: 14px; left: 10px; top: -5px;"></div>
-                            <div class="dot" style="width: 18px; height: 18px; left: 25px; top: 10px;"></div>
-                            <div class="dot" style="width: 22px; height: 22px; left: 10px; top: 30px;"></div>
+                    <div style="display: flex; align-items: flex-end; gap: 10px;">
+                        <div id="palette-controls">
+                            <div id="btn-brush" class="btn"><img src="brush.png" alt="브러쉬"></div>
+                            <div id="btn-bold" class="bold-dots">
+                                <div class="dot" style="width: 14px; height: 14px; left: 10px; top: -5px;"></div>
+                                <div class="dot" style="width: 18px; height: 18px; left: 25px; top: 10px;"></div>
+                                <div class="dot" style="width: 22px; height: 22px; left: 10px; top: 30px;"></div>
+                            </div>
                         </div>
-                    </div>
-                    <div id="color-palette">
-                        <!-- 색상들이 JS에서 생성됨 -->
+                        <div id="color-palette">
+                            <!-- 색상들이 JS에서 생성됨 -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -638,7 +640,6 @@
 
         <!-- 엔딩 화면 -->
         <div id="ending-screen">
-            <h1>Ending</h1>
             <div id="ending-content">
                 <img src="ebg.png" id="ebg">
                 <div id="result-canvases"></div>
@@ -1298,13 +1299,13 @@
             cap1.className = 'captured-canvas';
             cap2.className = 'captured-canvas';
 
-            // Layout: Canvas 1 on the right, shifted 10px left from original 15px
-            cap1.style.right = '25px';
+            // Layout: Canvas 1 on the right, shifted left 20px from 25px
+            cap1.style.right = '45px';
             cap1.style.top = '10px';
             cap1.style.zIndex = '11';
 
-            // Layout: Canvas 2 overlapping Canvas 1, shifted 10px left from 71px
-            cap2.style.left = '61px';
+            // Layout: Canvas 2 overlapping Canvas 1, shifted right 30px from 1px
+            cap2.style.left = '31px';
             cap2.style.top = (10 + cap1.height - cap2.height + 20) + 'px';
             cap2.style.zIndex = '12';
 
@@ -1533,17 +1534,17 @@
             cap3.style.position = 'absolute';
             cap3.style.background = 'transparent';
             cap3.style.border = 'none';
-            // Target position: Restore original (122px) and shift 10px left
-            cap3.style.left = '112px';
+            // Target position: Shifted right 15px from 112px
+            cap3.style.left = '127px';
             cap3.style.top = '65px';
             cap3.style.zIndex = '20';
             cap3.style.borderRadius = '50%';
 
-            // Add endg.png image: Restore original (32px) and shift 10px left
+            // Add endg.png image: Shifted right 10px from 22px
             const endgImg = new Image();
             endgImg.src = 'endg.png';
             endgImg.style.position = 'absolute';
-            endgImg.style.left = '22px';
+            endgImg.style.left = '32px';
             endgImg.style.top = '35px';
             endgImg.style.width = 'auto';
             endgImg.style.height = 'auto';
